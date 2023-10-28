@@ -1,0 +1,19 @@
+﻿{
+	"Generic": {
+		"FilesToKeep" : "50",
+		"SpaceToUseByScriptsMax" : "5MB"
+	},
+	"Tenant": {		
+		"clientId": "xxx0e736-xxxx-4488-8699-xxxxxxxxxxxx",
+		"tenantId": "xxxxx255-4e75-xxxx-8d64-267xxxxxx242",
+		"clientCertificate": "A0B9FBC8A6D556XXXXXXDBD5EABF5114AF1CE3",
+		"tenantName"       : "m365x12345678.onmicrosoft.com"
+	},
+    "Script":{
+		"Mail" : {
+			"FromMail": "security.scripts@m365x12345678.onmicrosoft.com",
+			"ToMail": "MyEmailAdress@domain.com"		
+		},
+		"seuilMailAlert" : "50GB"
+    }
+}
