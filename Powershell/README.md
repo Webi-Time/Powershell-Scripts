@@ -52,8 +52,6 @@ This JSON file is used to configure a script with these specific parameters. It 
 
 # Liste des scripts
 ---
-# Liste des scripts
----
 ## ⚙️ Scripts 
 | Script | Description 
 | -- | -- | 
