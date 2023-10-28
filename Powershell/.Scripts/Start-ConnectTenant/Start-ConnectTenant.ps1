@@ -38,8 +38,8 @@
     PS> .\Start-ConnectTenant.ps1 -VerboseLvl 0
 
 .LINK
-    https://github.com/Webi-Time/Scripts/blob/main/Powershell/.Documentation/Start-ConnectTenant.md
-    https://github.com/Webi-Time/Scripts/blob/main/Powershell/.Scripts/Start-ConnectTenant/Start-ConnectTenant.ps1
+    https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Documentation/Start-ConnectTenant.md
+    https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Scripts/Start-ConnectTenant/Start-ConnectTenant.ps1
     
 .NOTES
     This script serves as a helpful tool for administrators working with Microsoft Graph API tenants. It offers a user-friendly 

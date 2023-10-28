@@ -80,9 +80,9 @@ This PowerShell script performs the following tasks:
 >Version : 1.0
 
 ## Related Links
-https://github.com/Webi-Time/Scripts/blob/main/Powershell/.Documentation/Check-AzureAppsCredExpiration.md
+https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Documentation/Check-AzureAppsCredExpiration.md
 
-https://github.com/Webi-Time/Scripts/blob/main/Powershell/.Scripts/Check-AzureAppsCredExpiration/Check-AzureAppsCredExpiration.ps1
+https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Scripts/Check-AzureAppsCredExpiration/Check-AzureAppsCredExpiration.ps1
 
 ## Source Code
 ```powershell

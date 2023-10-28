@@ -78,9 +78,9 @@ This PowerShell script performs the following tasks:
 >Version : 1.0
 
 ## Related Links
-https://github.com/Webi-Time/Scripts/blob/main/Powershell/.Documentation/Check-AzureAD_LastSynchronisation.md
+https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Documentation/Check-AzureAD_LastSynchronisation.md
 
-https://github.com/Webi-Time/Scripts/blob/main/Powershell/.Scripts/Check-AzureAD_LastSynchronisation/Check-AzureAD_LastSynchronisation.ps1
+https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Scripts/Check-AzureAD_LastSynchronisation/Check-AzureAD_LastSynchronisation.ps1
 
 ## Source Code
 ```powershell

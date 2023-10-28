@@ -34,8 +34,8 @@
     PS> .\Check-ADConnectSync.ps1 -VerboseLvl 2
 
 .LINK
-    https://github.com/Webi-Time/Scripts/blob/main/Powershell/.Documentation/Check-AzureAD_LastSynchronisation.md
-    https://github.com/Webi-Time/Scripts/blob/main/Powershell/.Scripts/Check-AzureAD_LastSynchronisation/Check-AzureAD_LastSynchronisation.ps1
+    https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Documentation/Check-AzureAD_LastSynchronisation.md
+    https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Scripts/Check-AzureAD_LastSynchronisation/Check-AzureAD_LastSynchronisation.ps1
 
 .NOTES
     This script checks Azure AD Connect synchronization and sends an email alert if synchronization is interrupted. 

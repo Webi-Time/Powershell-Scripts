@@ -35,8 +35,8 @@
     PS> .\Check-MailBoxSize.ps1 -VerboseLvl 2
 
 .LINK
-    https://github.com/Webi-Time/Scripts/blob/main/Powershell/.Documentation/Check-MailBoxSize.md
-    https://github.com/Webi-Time/Scripts/blob/main/Powershell/.Scripts/Check-MailBoxSize/Check-MailBoxSize.ps1
+    https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Documentation/Check-MailBoxSize.md
+    https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Scripts/Check-MailBoxSize/Check-MailBoxSize.ps1
 
 .NOTES
     This script checks mailbox sizes for users and sends email alerts when a user's mailbox size exceeds a specified threshold. 

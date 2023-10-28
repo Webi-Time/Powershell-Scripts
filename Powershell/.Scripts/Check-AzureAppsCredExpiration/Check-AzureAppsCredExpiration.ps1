@@ -36,8 +36,8 @@
     PS> .\Check-AzureAppsCredExpiration.ps1 -VerboseLvl 2
 
 .LINK
-    https://github.com/Webi-Time/Scripts/blob/main/Powershell/.Documentation/Check-AzureAppsCredExpiration.md
-    https://github.com/Webi-Time/Scripts/blob/main/Powershell/.Scripts/Check-AzureAppsCredExpiration/Check-AzureAppsCredExpiration.ps1
+    https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Documentation/Check-AzureAppsCredExpiration.md
+    https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Scripts/Check-AzureAppsCredExpiration/Check-AzureAppsCredExpiration.ps1
 
 .NOTES
     This script is designed to help Azure administrators proactively manage and monitor Azure Application credentials, 

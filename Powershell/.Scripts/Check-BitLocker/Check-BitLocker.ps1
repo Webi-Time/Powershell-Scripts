@@ -35,8 +35,8 @@
     PS> .\Check-BitLocker.ps1 -VerboseLvl 2
 
 .LINK
-    https://github.com/Webi-Time/Scripts/blob/main/Powershell/.Documentation/Check-BitLocker.md
-    https://github.com/Webi-Time/Scripts/blob/main/Powershell/.Scripts/Check-BitLocker/Check-BitLocker.ps1
+    https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Documentation/Check-BitLocker.md
+    https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Scripts/Check-BitLocker/Check-BitLocker.ps1
 
 .NOTES
     This script is designed to help administrators ensure that BitLocker recovery keys are available for all computers, 
