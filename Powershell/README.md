@@ -53,19 +53,19 @@ This JSON file is used to configure a script with these specific parameters. It 
 # Liste des scripts
 ---
 ## ⚙️ Scripts 
-| Script | Description |
-| -- | -- |
-| [Check-AzureAD_LastSynchronisation.ps1](/Powershell/.Scripts/Check-AzureAD_LastSynchronisation/Check-AzureAD_LastSynchronisation.ps1)       | Vérifie la dernière synchronisation Azure AD | 
-| [Check-AzureAppsCredExpiration.ps1](/Powershell/.Scripts/Check-AzureAppsCredExpiration/Check-AzureAppsCredExpiration.ps1)    | Vérifie les dates d'expiration des informations d'identification des applications Azure | 
-| [Check-BitLocker.ps1](/Powershell/.Scripts/Check-BitLocker/Check-BitLocker.ps1)                                                                | Vérifie l'état de BitLocker sur les ordinateurs |
-| [Check-MailBoxSize.ps1](/Powershell/.Scripts/Check-MailBoxSize/Check-MailBoxSize.ps1)                                                          | Vérifie la taille des boîtes aux lettres | 
-| [Start-ConnectTenant.ps1](/Powershell/.Scripts/Start-ConnectTenant/Start-ConnectTenant.ps1)                                                    | Établit et gère la connexion au locataire Microsoft | 
-|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
+| Script | Description 
+| -- | -- | 
+| [Check-AzureAD_LastSynchronisation.ps1](/Powershell/.Scripts/Check-AzureAD_LastSynchronisation/Check-AzureAD_LastSynchronisation.ps1)       | Vérifie la dernière synchronisation Azure AD [Read More](Check-AzureAD_LastSynchronisation.md) |
+| [Check-AzureAppsCredExpiration.ps1](/Powershell/.Scripts/Check-AzureAppsCredExpiration/Check-AzureAppsCredExpiration.ps1)    | Vérifie les dates d'expiration des informations d'identification des applications Azure [Read More](Check-AzureAppsCredExpiration.md) |
+| [Check-BitLocker.ps1](/Powershell/.Scripts/Check-BitLocker/Check-BitLocker.ps1)                                                                | Vérifie l'état de BitLocker sur les ordinateurs [Read More](Check-BitLocker.md) |
+| [Check-MailBoxSize.ps1](/Powershell/.Scripts/Check-MailBoxSize/Check-MailBoxSize.ps1)                                                          | Vérifie la taille des boîtes aux lettres [Read More](Check-MailBoxSize.md) |
+| [Start-ConnectTenant.ps1](/Powershell/.Scripts/Start-ConnectTenant/Start-ConnectTenant.ps1)                                                    | Établit et gère la connexion au locataire Microsoft [Read More](Start-ConnectTenant.md) | 
+|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
 
 ## 📝 Scripts ...
 -----------------------------
 
-| Script | Description | Documentations |
-| -- | -- | -- |
-| ---------En construction--------- | ---------En construction--------- |
-|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
+| Script | Description | 
+| -- | -- | 
+| ---------En construction--------- | ---------En construction--------- [En construction](README.md) |
+|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
