@@ -19,10 +19,6 @@
     A switch parameter that, when specified, allows for a graceful disconnection from the Microsoft Graph tenant. It ends 
     the session without executing further actions. By default, it's set to $false.
 
-.PARAMETER AllowPreview
-    If set to $true, the script will allow the installation of preview versions of Microsoft Graph modules. By default, it's 
-    set to $false.
-
 .PARAMETER AllowBeta
     If set to $true, the script will allow the installation of beta versions of Microsoft Graph modules. By default, it's set 
     to $false.
@@ -69,10 +65,7 @@ Param
 
     [Parameter(Mandatory=$false)]
     [switch]$LogOff = $false,
-    
-    [Parameter(mandatory=$false)]
-    [boolean]$AllowPreview = $false,
-    
+   
     [Parameter(mandatory=$false)]
     [boolean]$AllowBeta = $false
 )
@@ -146,11 +139,11 @@ Begin
                 Import-Module -Name ModuleGenerics -Force -ErrorAction Stop
                 
                 Test-PackageProvider "NuGet" 
-                Test-PackageProvider "PowerShellGet"    
+                #Test-PackageProvider "PowerShellGet"    
 
-                $ModulesList =  "Authentication","Users","Groups","Mail","Calendar","Reports","Identity.DirectoryManagement" 
-                
-                if(-not (Test-Modules $ModulesList))
+                $GraphModulesList =  "Authentication","Users","Groups","Mail","Calendar","Reports","Identity.DirectoryManagement" 
+                $OthersModulesList = "ExchangeOnlineManagement","MSOnline"
+                if(-not (Test-Modules ($GraphModulesList + $OthersModulesList)))
                 {
                     if($AllowBeta){
                         [string[]]$Global:AllMsGraphModule = (Find-Module "Microsoft.Graph*").Name
@@ -162,15 +155,15 @@ Begin
                             throw "Ne fonctionne pas avec Powershell 7"
                         }
                     else{$vrs =  $null; $vrsExOn =  $null; $vrsMsol = '1.1.183.66' } 
-                    Install-GraphModuleInduviduals $ModulesList -AllowPreview $false -DesiredVersion $vrs
-                    Import-GraphModuleInduviduals $ModulesList -AllowPreview $false -DesiredVersion $vrs
+                    Install-GraphModuleInduviduals $ModulesList -DesiredVersion $vrs
+                    Import-GraphModuleInduviduals $ModulesList -DesiredVersion $vrs
                     
                     Install-ModuleUserV2 "ExchangeOnlineManagement" -DesiredVersion $vrsExOn
                     Import-ModuleUserV2 "ExchangeOnlineManagement" -DesiredVersion $vrsExOn
 
                     Install-ModuleUserV2 "MSOnline" -DesiredVersion $vrsMsol
                     Import-ModuleUserV2 "MSOnline" -DesiredVersion $vrsMsol
-                }
+                } 
                 if(-not (Test-CertThumbprint $CertThumbprint -My)){throw "Problem with thumbprint in JSON file"}
 
             }

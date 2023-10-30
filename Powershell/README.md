@@ -60,9 +60,10 @@ This JSON file is used to configure a script with these specific parameters. It 
 | [Check-BitLocker.ps1](/Powershell/.Scripts/Check-BitLocker/Check-BitLocker.ps1)                                                                | Vérifie l'état de BitLocker sur les ordinateurs [Read More](/Powershell/.Documentation/Check-BitLocker.md) |
 | [Check-MailBoxSize.ps1](/Powershell/.Scripts/Check-MailBoxSize/Check-MailBoxSize.ps1)                                                          | Vérifie la taille des boîtes aux lettres [Read More](/Powershell/.Documentation/Check-MailBoxSize.md) |
 | [Start-ConnectTenant.ps1](/Powershell/.Scripts/Start-ConnectTenant/Start-ConnectTenant.ps1)                                                    | Établit et gère la connexion au locataire Microsoft [Read More](/Powershell/.Documentation/Start-ConnectTenant.md) | 
+| [Add-CompagnyUsers.ps1](/Powershell/.Scripts/Add-CompagnyUsers/Add-CompagnyUsers.ps1)                                                    | Créer des utilisateurs dans Active Directory a l'aide d'un fichier CSV [Read More](/Powershell/.Documentation/Add-CompagnyUsers.md) | 
 |xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
 
-
+Add-CompagnyUsers
 ## 📝 Scripts ...
 -----------------------------
 

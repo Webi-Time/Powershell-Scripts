@@ -15,10 +15,6 @@
         - `2`: Standard logging. Displays standard log messages, basic information, and errors.
         - `3`: Verbose logging. Displays detailed log messages, standard information, and errors.
 
-.PARAMETER AllowPreview
-    If set to $true, the script will allow the installation of preview versions of Microsoft Graph modules. By default, it's
-     set to $false.
-
 .PARAMETER AllowBeta
     If set to $true, the script will allow the installation of beta versions of Microsoft Graph modules. By default, it's 
     set to $false.
@@ -62,9 +58,6 @@ Param
     [Parameter(Mandatory = $false)][ValidateSet(0, 1, 2, 3, 4, 5)]
     [byte]$VerboseLvl = 2,
 
-    [Parameter(mandatory=$false)]
-    [boolean]$AllowPreview = $false,
-    
     [Parameter(mandatory=$false)]
     [boolean]$AllowBeta = $false
 )
@@ -133,19 +126,20 @@ Param
                 Import-Module -Name ModuleGenerics -Force -ErrorAction Stop
                 
                 Test-PackageProvider "NuGet" 
-                Test-PackageProvider "PowerShellGet"    
+                #Test-PackageProvider "PowerShellGet"    
 
-                $ModulesList = "Authentication","Applications","Users.Actions"
-                if(-not (Test-Modules  $ModulesList))
+                $GraphModulesList = "Authentication","Applications","Users.Actions"
+                #$OthersModulesList = "ExchangeOnlineManagement","MSOnline"
+                if(-not (Test-Modules ($GraphModulesList + $OthersModulesList)))
                 {
                     if($AllowBeta){
                         [string[]]$Global:AllMsGraphModule = (Find-Module "Microsoft.Graph*").Name
                     }else{
                         [string[]]$Global:AllMsGraphModule = (Find-Module "Microsoft.Graph*").Name | Where-Object {$_ -notlike "*beta*"}
                     }
-                    $vrs = $null   
-                    Install-GraphModuleInduviduals $ModulesList -AllowPreview $false -DesiredVersion $vrs
-                    Import-GraphModuleInduviduals $ModulesList -AllowPreview $false -DesiredVersion $vrs
+                    $vrs = $null 
+                    Install-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
+                    Import-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
                     
                 }
                 if(-not (Test-CertThumbprint $CertThumbprint -My)){throw "Problem with thumbprint in JSON file"}

@@ -13,16 +13,12 @@
         - `2`: Standard logging. Displays standard log messages, basic information, and errors.
         - `3`: Verbose logging. Displays detailed log messages, standard information, and errors.
 
-.PARAMETER AllowPreview
-    If set to $true, the script will allow the installation of preview versions of Microsoft Graph modules. By default, it's
-     set to $false.
-
 .PARAMETER AllowBeta
     If set to $true, the script will allow the installation of beta versions of Microsoft Graph modules. By default, it's
      set to $false.
 
 .INPUTS
-    - seuilMailAlert : This parameter is set to "50GB" and indicates the size threshold for sending an e-mail alert.
+    - seuilMailAlert : This parameter is set to "50GB" and indicates the size threshold for sending an e-mail alert. 
 
 .OUTPUTS
     This script generates logging information and may send email alerts for users with mailbox sizes exceeding the specified 
@@ -62,9 +58,6 @@ Param
     [Parameter(Mandatory = $false)][ValidateSet(0, 1, 2, 3, 4, 5)]
     [byte]$VerboseLvl = 2,
 
-    [Parameter(mandatory=$false)]
-    [boolean]$AllowPreview = $false,
-    
     [Parameter(mandatory=$false)]
     [boolean]$AllowBeta = $false
 )
@@ -136,10 +129,11 @@ Param
                 Import-Module -Name ModuleGenerics -Force -ErrorAction Stop
                 
                 Test-PackageProvider "NuGet" 
-                Test-PackageProvider "PowerShellGet"    
+                #Test-PackageProvider "PowerShellGet"    
 
-                $ModulesList = "Authentication","Reports","Users.Actions"
-                if(-not (Test-Modules  $ModulesList))
+                $GraphModulesList =  "Authentication","Users","Groups","Mail","Calendar","Reports","Identity.DirectoryManagement" 
+                #$OthersModulesList = "ExchangeOnlineManagement","MSOnline"
+                if(-not (Test-Modules ($GraphModulesList + $OthersModulesList)))
                 {
                     if($AllowBeta){
                         [string[]]$Global:AllMsGraphModule = (Find-Module "Microsoft.Graph*").Name
@@ -147,8 +141,8 @@ Param
                         [string[]]$Global:AllMsGraphModule = (Find-Module "Microsoft.Graph*").Name | Where-Object {$_ -notlike "*beta*"}
                     }
                     $vrs = $null 
-                    Install-GraphModuleInduviduals $ModulesList -AllowPreview $false -DesiredVersion $vrs
-                    Import-GraphModuleInduviduals $ModulesList -AllowPreview $false -DesiredVersion $vrs
+                    Install-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
+                    Import-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
                     
                 }
                 if(-not (Test-CertThumbprint $CertThumbprint -My)){throw "Problem with thumbprint in JSON file"}
@@ -241,8 +235,8 @@ Param
                 exit 1
             }	        
         }else{
-            Log "Script" "No mailbox has reached the $seuilMail limit" 1 Green 
-            Write-Output "No mailbox has reached the $seuilMail limit"
+            Log "Script" "No mailbox has reached the $(wsize $seuilMail)  limit" 1 Green 
+            Write-Output "No mailbox has reached the $(wsize $seuilMail)  limit"
         }
 
         ########## END SCRIPT #########

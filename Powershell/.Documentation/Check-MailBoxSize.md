@@ -5,8 +5,8 @@ specified threshold. It leverages the Microsoft Graph API to gather mailbox usag
 
 ## Parameters
 ```powershell
-.\Check-MailBoxSize\Check-MailBoxSize.ps1 [[-VerboseLvl] <Byte>] [[-AllowPreview] <Boolean>] 
-[[-AllowBeta] <Boolean>] [<CommonParameters>]
+.\Check-MailBoxSize\Check-MailBoxSize.ps1 [[-VerboseLvl] <Byte>] [[-AllowBeta] <Boolean>] 
+[<CommonParameters>]
 
 ```
 ```powershell
@@ -18,17 +18,9 @@ specified threshold. It leverages the Microsoft Graph API to gather mailbox usag
     Accepter les caractères génériques :  false
 ```
 ```powershell
--AllowPreview <Boolean>
-    Obligatoire :                         false
-    Position :                            2
-    Valeur par défaut                     False
-    Accepter l entrée de pipeline :       false
-    Accepter les caractères génériques :  false
-```
-```powershell
 -AllowBeta <Boolean>
     Obligatoire :                         false
-    Position :                            3
+    Position :                            2
     Valeur par défaut                     False
     Accepter l entrée de pipeline :       false
     Accepter les caractères génériques :  false
@@ -41,7 +33,7 @@ specified threshold. It leverages the Microsoft Graph API to gather mailbox usag
 
 ## Inputs
 ### JSON configuration
-This JSON file contains configurations for a script. It is structured into three sections: Generic, Tenant and Script. Find more explanation[here](/Powershell/README.md)
+This JSON file contains configurations for a script. It is structured into three sections: Generic, Tenant and Script. Find more explanation [here](/Powershell/README.md)
 #### Script
 - seuilMailAlert : This parameter is set to "50GB" and indicates the size threshold for sending an e-mail alert.
 
@@ -94,9 +86,6 @@ Param
     [Parameter(Mandatory = $false)][ValidateSet(0, 1, 2, 3, 4, 5)]
     [byte]$VerboseLvl = 2,
 
-    [Parameter(mandatory=$false)]
-    [boolean]$AllowPreview = $false,
-    
     [Parameter(mandatory=$false)]
     [boolean]$AllowBeta = $false
 )
@@ -168,10 +157,11 @@ Param
                 Import-Module -Name ModuleGenerics -Force -ErrorAction Stop
                 
                 Test-PackageProvider "NuGet" 
-                Test-PackageProvider "PowerShellGet"    
+                #Test-PackageProvider "PowerShellGet"    
 
-                $ModulesList = "Authentication","Reports","Users.Actions"
-                if(-not (Test-Modules  $ModulesList))
+                $GraphModulesList =  "Authentication","Users","Groups","Mail","Calendar","Reports","Identity.DirectoryManagement" 
+                #$OthersModulesList = "ExchangeOnlineManagement","MSOnline"
+                if(-not (Test-Modules ($GraphModulesList + $OthersModulesList)))
                 {
                     if($AllowBeta){
                         [string[]]$Global:AllMsGraphModule = (Find-Module "Microsoft.Graph*").Name
@@ -179,8 +169,8 @@ Param
                         [string[]]$Global:AllMsGraphModule = (Find-Module "Microsoft.Graph*").Name | Where-Object {$_ -notlike "*beta*"}
                     }
                     $vrs = $null 
-                    Install-GraphModuleInduviduals $ModulesList -AllowPreview $false -DesiredVersion $vrs
-                    Import-GraphModuleInduviduals $ModulesList -AllowPreview $false -DesiredVersion $vrs
+                    Install-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
+                    Import-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
                     
                 }
                 if(-not (Test-CertThumbprint $CertThumbprint -My)){throw "Problem with thumbprint in JSON file"}
@@ -273,8 +263,8 @@ Param
                 exit 1
             }	        
         }else{
-            Log "Script" "No mailbox has reached the $seuilMail limit" 1 Green 
-            Write-Output "No mailbox has reached the $seuilMail limit"
+            Log "Script" "No mailbox has reached the $(wsize $seuilMail)  limit" 1 Green 
+            Write-Output "No mailbox has reached the $(wsize $seuilMail)  limit"
         }
 
         ########## END SCRIPT #########

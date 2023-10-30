@@ -5,8 +5,8 @@ hasn't occurred within the specified timeframe. It uses the Microsoft Graph API 
 
 ## Parameters
 ```powershell
-.\Check-AzureAD_LastSynchronisation\Check-AzureAD_LastSynchronisation.ps1 [[-VerboseLvl] <Byte>] 
-[[-AllowPreview] <Boolean>] [[-AllowBeta] <Boolean>] [<CommonParameters>]
+.\Check-AzureAD_LastSynchronisation\Check-AzureAD_LastSynchronisation.ps1 [[-VerboseLvl] 
+<Byte>] [[-AllowBeta] <Boolean>] [<CommonParameters>]
 
 ```
 ```powershell
@@ -18,17 +18,9 @@ hasn't occurred within the specified timeframe. It uses the Microsoft Graph API 
     Accepter les caractères génériques :  false
 ```
 ```powershell
--AllowPreview <Boolean>
-    Obligatoire :                         false
-    Position :                            2
-    Valeur par défaut                     False
-    Accepter l entrée de pipeline :       false
-    Accepter les caractères génériques :  false
-```
-```powershell
 -AllowBeta <Boolean>
     Obligatoire :                         false
-    Position :                            3
+    Position :                            2
     Valeur par défaut                     False
     Accepter l entrée de pipeline :       false
     Accepter les caractères génériques :  false
@@ -41,7 +33,7 @@ hasn't occurred within the specified timeframe. It uses the Microsoft Graph API 
 
 ## Inputs
 ### JSON configuration
-This JSON file contains configurations for a script. It is structured into three sections: Generic, Tenant and Script. Find more explanation[here](/Powershell/README.md)
+This JSON file contains configurations for a script. It is structured into three sections: Generic, Tenant and Script. Find more explanation [here](/Powershell/README.md)
 #### Script
 - MaxMinutes : This parameter is set to "45" and indicates the maximum number of minutes without synchronization and e-mail alert.
 
@@ -92,9 +84,6 @@ Param
     [Parameter(Mandatory = $false)][ValidateSet(0, 1, 2, 3, 4, 5)]
     [byte]$VerboseLvl = 2,
 
-    [Parameter(mandatory=$false)]
-    [boolean]$AllowPreview = $false,
-    
     [Parameter(mandatory=$false)]
     [boolean]$AllowBeta = $false
 )
@@ -161,10 +150,11 @@ Param
                 Import-Module -Name ModuleGenerics -Force -ErrorAction Stop
                 
                 Test-PackageProvider "NuGet" 
-                Test-PackageProvider "PowerShellGet"    
+                #Test-PackageProvider "PowerShellGet"    
 
-                $ModulesList = "Authentication","Identity.DirectoryManagement","Users","Users.Actions"
-                if(-not (Test-Modules  $ModulesList))
+                $GraphModulesList = "Authentication","Identity.DirectoryManagement","Users","Users.Actions"
+                #$OthersModulesList = "ExchangeOnlineManagement","MSOnline"
+                if(-not (Test-Modules ($GraphModulesList + $OthersModulesList)))
                 {
                     if($AllowBeta){
                         [string[]]$Global:AllMsGraphModule = (Find-Module "Microsoft.Graph*").Name
@@ -172,8 +162,8 @@ Param
                         [string[]]$Global:AllMsGraphModule = (Find-Module "Microsoft.Graph*").Name | Where-Object {$_ -notlike "*beta*"}
                     }
                     $vrs = $null 
-                    Install-GraphModuleInduviduals $ModulesList -AllowPreview $false -DesiredVersion $vrs
-                    Import-GraphModuleInduviduals $ModulesList -AllowPreview $false -DesiredVersion $vrs
+                    Install-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
+                    Import-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
                     
                 }
                 if(-not (Test-CertThumbprint $CertThumbprint -My)){throw "Problem with thumbprint in JSON file"}

@@ -6,8 +6,8 @@ authorized scopes, SKU information, user details, and more.
 
 ## Parameters
 ```powershell
-.\Start-ConnectTenant\Start-ConnectTenant.ps1 [[-VerboseLvl] <Byte>] [-LogOff] [[-AllowPreview] 
-<Boolean>] [[-AllowBeta] <Boolean>] [<CommonParameters>]
+.\Start-ConnectTenant\Start-ConnectTenant.ps1 [[-VerboseLvl] <Byte>] [-LogOff] [[-AllowBeta] 
+<Boolean>] [<CommonParameters>]
 
 ```
 ```powershell
@@ -27,17 +27,9 @@ authorized scopes, SKU information, user details, and more.
     Accepter les caractères génériques :  false
 ```
 ```powershell
--AllowPreview <Boolean>
-    Obligatoire :                         false
-    Position :                            2
-    Valeur par défaut                     False
-    Accepter l entrée de pipeline :       false
-    Accepter les caractères génériques :  false
-```
-```powershell
 -AllowBeta <Boolean>
     Obligatoire :                         false
-    Position :                            3
+    Position :                            2
     Valeur par défaut                     False
     Accepter l entrée de pipeline :       false
     Accepter les caractères génériques :  false
@@ -50,7 +42,7 @@ authorized scopes, SKU information, user details, and more.
 
 ## Inputs
 ### JSON configuration
-This JSON file contains configurations for a script. It is structured into three sections: Generic, Tenant and Script. Find more explanation[here](/Powershell/README.md)
+This JSON file contains configurations for a script. It is structured into three sections: Generic, Tenant and Script. Find more explanation [here](/Powershell/README.md)
 #### Script
 None.
 
@@ -101,10 +93,7 @@ Param
 
     [Parameter(Mandatory=$false)]
     [switch]$LogOff = $false,
-    
-    [Parameter(mandatory=$false)]
-    [boolean]$AllowPreview = $false,
-    
+   
     [Parameter(mandatory=$false)]
     [boolean]$AllowBeta = $false
 )
@@ -178,11 +167,11 @@ Begin
                 Import-Module -Name ModuleGenerics -Force -ErrorAction Stop
                 
                 Test-PackageProvider "NuGet" 
-                Test-PackageProvider "PowerShellGet"    
+                #Test-PackageProvider "PowerShellGet"    
 
-                $ModulesList =  "Authentication","Users","Groups","Mail","Calendar","Reports","Identity.DirectoryManagement" 
-                
-                if(-not (Test-Modules $ModulesList))
+                $GraphModulesList =  "Authentication","Users","Groups","Mail","Calendar","Reports","Identity.DirectoryManagement" 
+                $OthersModulesList = "ExchangeOnlineManagement","MSOnline"
+                if(-not (Test-Modules ($GraphModulesList + $OthersModulesList)))
                 {
                     if($AllowBeta){
                         [string[]]$Global:AllMsGraphModule = (Find-Module "Microsoft.Graph*").Name
@@ -194,15 +183,15 @@ Begin
                             throw "Ne fonctionne pas avec Powershell 7"
                         }
                     else{$vrs =  $null; $vrsExOn =  $null; $vrsMsol = '1.1.183.66' } 
-                    Install-GraphModuleInduviduals $ModulesList -AllowPreview $false -DesiredVersion $vrs
-                    Import-GraphModuleInduviduals $ModulesList -AllowPreview $false -DesiredVersion $vrs
+                    Install-GraphModuleInduviduals $ModulesList -DesiredVersion $vrs
+                    Import-GraphModuleInduviduals $ModulesList -DesiredVersion $vrs
                     
                     Install-ModuleUserV2 "ExchangeOnlineManagement" -DesiredVersion $vrsExOn
                     Import-ModuleUserV2 "ExchangeOnlineManagement" -DesiredVersion $vrsExOn
 
                     Install-ModuleUserV2 "MSOnline" -DesiredVersion $vrsMsol
                     Import-ModuleUserV2 "MSOnline" -DesiredVersion $vrsMsol
-                }
+                } 
                 if(-not (Test-CertThumbprint $CertThumbprint -My)){throw "Problem with thumbprint in JSON file"}
 
             }

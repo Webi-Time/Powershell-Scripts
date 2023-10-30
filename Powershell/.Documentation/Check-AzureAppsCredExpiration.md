@@ -7,7 +7,7 @@ retrieval and email notifications.
 ## Parameters
 ```powershell
 .\Check-AzureAppsCredExpiration\Check-AzureAppsCredExpiration.ps1 [[-VerboseLvl] <Byte>] 
-[[-AllowPreview] <Boolean>] [[-AllowBeta] <Boolean>] [<CommonParameters>]
+[[-AllowBeta] <Boolean>] [<CommonParameters>]
 
 ```
 ```powershell
@@ -19,17 +19,9 @@ retrieval and email notifications.
     Accepter les caractères génériques :  false
 ```
 ```powershell
--AllowPreview <Boolean>
-    Obligatoire :                         false
-    Position :                            2
-    Valeur par défaut                     False
-    Accepter l entrée de pipeline :       false
-    Accepter les caractères génériques :  false
-```
-```powershell
 -AllowBeta <Boolean>
     Obligatoire :                         false
-    Position :                            3
+    Position :                            2
     Valeur par défaut                     False
     Accepter l entrée de pipeline :       false
     Accepter les caractères génériques :  false
@@ -42,7 +34,7 @@ retrieval and email notifications.
 
 ## Inputs
 ### JSON configuration
-This JSON file contains configurations for a script. It is structured into three sections: Generic, Tenant and Script. Find more explanation[here](/Powershell/README.md)
+This JSON file contains configurations for a script. It is structured into three sections: Generic, Tenant and Script. Find more explanation [here](/Powershell/README.md)
 #### Script
 - LimitExpirationDays : This parameter is set to "90" and indicates the number of days before expiration for sending an e-mail alert.
 
@@ -94,9 +86,6 @@ Param
     [Parameter(Mandatory = $false)][ValidateSet(0, 1, 2, 3, 4, 5)]
     [byte]$VerboseLvl = 2,
 
-    [Parameter(mandatory=$false)]
-    [boolean]$AllowPreview = $false,
-    
     [Parameter(mandatory=$false)]
     [boolean]$AllowBeta = $false
 )
@@ -165,19 +154,20 @@ Param
                 Import-Module -Name ModuleGenerics -Force -ErrorAction Stop
                 
                 Test-PackageProvider "NuGet" 
-                Test-PackageProvider "PowerShellGet"    
+                #Test-PackageProvider "PowerShellGet"    
 
-                $ModulesList = "Authentication","Applications","Users.Actions"
-                if(-not (Test-Modules  $ModulesList))
+                $GraphModulesList = "Authentication","Applications","Users.Actions"
+                #$OthersModulesList = "ExchangeOnlineManagement","MSOnline"
+                if(-not (Test-Modules ($GraphModulesList + $OthersModulesList)))
                 {
                     if($AllowBeta){
                         [string[]]$Global:AllMsGraphModule = (Find-Module "Microsoft.Graph*").Name
                     }else{
                         [string[]]$Global:AllMsGraphModule = (Find-Module "Microsoft.Graph*").Name | Where-Object {$_ -notlike "*beta*"}
                     }
-                    $vrs = $null   
-                    Install-GraphModuleInduviduals $ModulesList -AllowPreview $false -DesiredVersion $vrs
-                    Import-GraphModuleInduviduals $ModulesList -AllowPreview $false -DesiredVersion $vrs
+                    $vrs = $null 
+                    Install-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
+                    Import-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
                     
                 }
                 if(-not (Test-CertThumbprint $CertThumbprint -My)){throw "Problem with thumbprint in JSON file"}

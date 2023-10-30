@@ -1,11 +1,10 @@
-﻿## The *Check-BitLocker.ps1* PowerShell Script
+﻿## The *Template.ps1* PowerShell Script
 
-This script queries Active Directory for computer objects, checks their BitLocker recovery keys, and sends an email 
-alert if any computers are missing recovery keys. It uses the Microsoft Graph API to send email notifications.
+
 
 ## Parameters
 ```powershell
-.\Check-BitLocker\Check-BitLocker.ps1 [[-VerboseLvl] <Byte>] [[-AllowBeta] <Boolean>] 
+.\.Template\Template.ps1 [[-VerboseLvl] <Byte>] [-AllowPreview] [-AllowBeta] 
 [<CommonParameters>]
 
 ```
@@ -18,9 +17,17 @@ alert if any computers are missing recovery keys. It uses the Microsoft Graph AP
     Accepter les caractères génériques :  false
 ```
 ```powershell
--AllowBeta <Boolean>
+-AllowPreview [<SwitchParameter>]
     Obligatoire :                         false
-    Position :                            2
+    Position :                            named
+    Valeur par défaut                     False
+    Accepter l entrée de pipeline :       false
+    Accepter les caractères génériques :  false
+```
+```powershell
+-AllowBeta [<SwitchParameter>]
+    Obligatoire :                         false
+    Position :                            named
     Valeur par défaut                     False
     Accepter l entrée de pipeline :       false
     Accepter les caractères génériques :  false
@@ -35,37 +42,18 @@ alert if any computers are missing recovery keys. It uses the Microsoft Graph AP
 ### JSON configuration
 This JSON file contains configurations for a script. It is structured into three sections: Generic, Tenant and Script. Find more explanation [here](/Powershell/README.md)
 #### Script
-- OUBase : This parameter is the OU computers for check if BitLocker recovery keys are available.
-- ComputerToExclude : This parameter permit multiple value, for exclude computer form the check
+None.
 
 This JSON file is used to configure a script with these specific parameters. It is used to customize the script's behavior according to the user's needs and requirements.
 
 
 ## Example
 ```powershell
-PS> .\Check-BitLocker.ps1
-
-```
-
-## Example
-```powershell
-PS> .\Check-BitLocker.ps1 -VerboseLvl 2
+PS C:\>
 
 ```
 
 ## Notes
-This script is designed to help administrators ensure that BitLocker recovery keys are available for all computers, 
-providing an alert mechanism when keys are missing.
-
-This PowerShell script performs the following tasks:
-1. Sets up the necessary environment and configuration, including loading required modules.
-2. Retrieves a list of computer objects from Active Directory that are enabled and within the specified search base.
-3. Iterates through the list of computers, excluding those with specific criteria (e.g., names containing "DESKTOP").
-4. Checks if each computer has a BitLocker recovery password by querying Active Directory.
-5. If a computer doesn't have a recovery password, it's marked as missing one, and details are logged.
-6. If any computers are found to be missing recovery keys, an email notification is sent using the Microsoft Graph API.
-7. The script logs the outcome, including any sent email notifications, and its execution time.
-
 >Author = 'AUBRIL Damien'
 
 >Creation Date : 26/10/2023
@@ -73,9 +61,9 @@ This PowerShell script performs the following tasks:
 >Version : 1.0
 
 ## Related Links
-https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Documentation/Check-BitLocker.md
+https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Documentation/Template.md
 
-https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Scripts/Check-BitLocker/Check-BitLocker.ps1
+https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Scripts/Template/Template.ps1
 
 ## Source Code
 ```powershell
@@ -84,15 +72,21 @@ https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Scripts/Ch
 [cmdletbinding()]
 Param
 (
-    [Parameter(Mandatory = $false)][ValidateSet(0, 1, 2, 3, 4, 5)]
+    [Parameter(Mandatory = $false)]
+    [ValidateSet(0, 1, 2, 3)]
     [byte]$VerboseLvl = 2,
-
+    
     [Parameter(mandatory=$false)]
-    [boolean]$AllowBeta = $false
+    [switch]$AllowPreview = $false,
+    
+    [Parameter(mandatory=$false)]
+    [switch]$AllowBeta = $false
 )
 
-
+Begin
+{
 #region Begin
+
     try{
         Clear-Host
         $StartScript = Get-Date
@@ -111,7 +105,8 @@ Param
                 [string]$global:Path_Logs = $Path_Root + "\Logs\"
 
             # Create the path for script result files
-                [string]$Path_Result = $null # $Path_Root + "\Results\"
+                #[string]$Path_Result = $null 
+                [string]$Path_Result = $Path_Root + "\Results\"
 
             # Get the date in "yyyy-MM-dd-HH-mm-ss" format for log files
                 [string]$global:Date_Logs_File = Get-Date -Format "yyyy-MM-dd-HH-mm-ss"
@@ -137,14 +132,12 @@ Param
                 [string]$clientId        = $Tenant_Param.clientId
                 [string]$tenantId        = $Tenant_Param.tenantId
                 [string]$CertThumbprint  = $Tenant_Param.clientCertificate
+                [string]$tenantName      = $Tenant_Param.tenantName
              
             # Variables du script
                 [string]$FromMail       = $Script_Param.Mail.FromMail
                 [string]$ToMail         = $Script_Param.Mail.ToMail
-    
-                [string]$base = $Script_Param.OUBase
-                [string[]]$exceptionList = $Script_Param.ComputerToExclude
-
+  
         #endregion JSON Config
 
         #region Modules
@@ -152,12 +145,11 @@ Param
             try{
                 Write-Output "Loading Modules"
                 Import-Module -Name ModuleGenerics -Force -ErrorAction Stop
-                Import-Module -Name ActiveDirectory -Force -ErrorAction Stop
                 
                 Test-PackageProvider "NuGet" 
-                #Test-PackageProvider "PowerShellGet"    
+                #Test-PackageProvider "PowerShellGet"
 
-                $GraphModulesList = "Authentication","Users.Actions"
+                $GraphModulesList =  "Authentication","Users","Groups","Mail","Calendar","Reports","Identity.DirectoryManagement" 
                 #$OthersModulesList = "ExchangeOnlineManagement","MSOnline"
                 if(-not (Test-Modules ($GraphModulesList + $OthersModulesList)))
                 {
@@ -166,10 +158,19 @@ Param
                     }else{
                         [string[]]$Global:AllMsGraphModule = (Find-Module "Microsoft.Graph*").Name | Where-Object {$_ -notlike "*beta*"}
                     }
-                    $vrs = $null 
-                    Install-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
-                    Import-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
+                    if ($PSVersionTable.PSVersion -like "7.*")
+                        {
+                            throw "Ne fonctionne pas avec Powershell 7"
+                        }
+                    else{$vrs =  $null; $vrsExOn =  $null; $vrsMsol = '1.1.183.66' } 
+                    Install-GraphModuleInduviduals $GraphModulesList -AllowPreview $false -DesiredVersion $vrs
+                    Import-GraphModuleInduviduals $GraphModulesList -AllowPreview $false -DesiredVersion $vrs
                     
+                    #Install-ModuleUserV2 "ExchangeOnlineManagement" -DesiredVersion $vrsExOn
+                    #Import-ModuleUserV2 "ExchangeOnlineManagement" -DesiredVersion $vrsExOn
+
+                    #Install-ModuleUserV2 "MSOnline" -DesiredVersion $vrsMsol
+                    #Import-ModuleUserV2 "MSOnline" -DesiredVersion $vrsMsol
                 }
                 if(-not (Test-CertThumbprint $CertThumbprint -My)){throw "Problem with thumbprint in JSON file"}
 
@@ -183,7 +184,9 @@ Param
         #endregion Modules
 
         #region function
-  
+       
+        
+        
         #endregion function
 
         
@@ -204,85 +207,47 @@ Param
         exit 1
     }
     
-#endregion Begin
 
+#endregion Begin
+}
+Process
+{
 #region Process
     try 
     {
         Log "Script" "Start of script : $($MyInvocation.MyCommand.Name)" 99 Cyan  
-
-        try{
-            Log "Script" "Retrieving the computer list" 1 Cyan
-            $list_computers = Get-ADComputer -Filter {(Enabled -eq $True)} -SearchBase $base -SearchScope Subtree -Property msTPM-OwnerInformation, msTPM-TpmInformationForComputer, PasswordLastSet
-        }
-        catch{
-            Log "Script" "Error - Unable to retrieve computer list from OnPremise AD" 1 Red
-            Get-DebugError $_
-            exit 1
-        }
-        $strToReport = ""
-        $msg = ""
-        $found=$false
-        foreach ($computer in $list_computers) {
-    
-            if (($computer.DistinguishedName -match "DESKTOP") -or $exceptionList.Contains($computer.name)) { 
-                continue 
-            }
-    
-            [string]$BitLocker_Key = ""
-                
-            #Check if the computer object has had a BitLocker Recovery Password
-            $Bitlocker_Object = Get-ADObject -Filter {objectclass -eq 'msFVE-RecoveryInformation'} -SearchBase $computer.DistinguishedName -Properties 'msFVE-RecoveryPassword' | Select-Object -Last 1
-    
-            if($Bitlocker_Object.'msFVE-RecoveryPassword') {
-                $BitLocker_Key = $BitLocker_Object.'msFVE-RecoveryPassword'
-            }
-            else {
-                $strToReport = "<b>" +$computer.name + "</b>"+ ", no recovery key for laptop with last Password set :" + $computer.PasswordLastSet
-                $msg = $msg + "<li>" + $strToReport + "</li>" 
-                $found=$true
-           }
-          }
-    
-        if ($found)
-        {
-            Disconnect-MsGraphTenant -Type Silently | Out-Null
-            Connect-MsGraphTenant -ClientId $clientId -TenantId $tenantId -CertThumbprint $CertThumbprint
-    
-            [string]$ObjectMessage = "SCRIPT - Alert - Cannot found Bitlocker key for computers"
-            [string]$BodyMessage = "$cssGeneral" + "<h1>List of hosts :</h1><ul>" + $msg + "</ul><br>Please check if excepion list is updated on Visual Cron job"
-  
-            try{
-                SendMail -FromMail $FromMail -ToMail $ToMail -MailSubject $ObjectMessage -MailBody $BodyMessage
-                Write-Output "Mail sent - Computer without Bitlocker foud"
-                Log "Script" "Mail sent - Computer without Bitlocker foud" 2 Yellow
-            } catch { 
-                Log "Script" "Error - Unable to send mail" 1 Red
-                Get-DebugError $_
-                Disconnect-MsGraphTenant
-                exit 1
-            }	     
         
-            ########## END SCRIPT #########
-            Disconnect-MsGraphTenant
-        } else {
-            Log "Script" "Mail not sent - No computer without bitlocker" 2 Green
-            Write-Output "Mail not sent - No computer without bitlocker"
-        }
+     
+
+
+
+
+
+
+         
+        # Deconnexion au cas ou mais sans erreur a afficher
+        Disconnect-MsGraphTenant -Type Silently | Out-Null
+        Connect-MsGraphTenant -ClientId $clientId -TenantId $tenantId -CertThumbprint $CertThumbprint
+ 
+        
     }
     catch {
         Get-DebugError $_
         exit 1
     }
 #endregion Process
-
+}
+End
+{
 #region End
     try{
-
+       
+        Log "Script" "END" 0 red
         $Temps = ((Get-Date )-(Get-Date $StartScript)).ToString().Split('.')[0]
         Log "Script" "Running time : " 1 Cyan -NoNewLine ;  Log "Script" "[$($Temps.Split(':')[0])h$($Temps.Split(':')[1])m$($Temps.Split(':')[2])s]" 1 Red -NoDate
         Log "Script" "Script end : " 1 Cyan -NoNewLine ;  Log "Script" "[$($MyInvocation.MyCommand.Name)]" 1 Red -NoDate
-
+       
+        #Set-Location $oldLocation
         exit 0
     }
     catch {
@@ -290,8 +255,7 @@ Param
         exit 1
     }
 #endregion End
-
-
+}
 
 ```
 

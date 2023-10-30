@@ -83,7 +83,8 @@ Function Log {
         [Parameter(Mandatory=$false, Position=5)][string]$CustomName ="",
         [Parameter(Mandatory=$false, Position=6)][switch]$NoOutPut,
         [Parameter(Mandatory=$false, Position=7)][switch]$NoNewLine,
-        [Parameter(Mandatory=$false, Position=8)][switch]$NoDate
+        [Parameter(Mandatory=$false, Position=8)][switch]$NoDate,
+        [Parameter(Mandatory=$false, Position=9)][string]$CustomBeginText =""
     )
     # Retrieve the full path of all folders (contexts) to write logs
         $logFolders = $Contexts | ForEach-Object { Join-Path $LogPath $_ }
@@ -93,7 +94,7 @@ Function Log {
     
     # Format each line to be written in the logs
         $sLineTimeStamp = Get-Date -f "dd/MM/yyyy HH:mm:ss"
-        $sLine = $sInput | ForEach-Object { $sLineTimeStamp + " - " + $_ }
+        $sLine = $sInput | ForEach-Object { $sLineTimeStamp + " - " + $CustomBeginText + $_ }
 
      # If -NoOutput is specified, the function does not write a log file
     if (-not $NoOutPut) 
@@ -165,15 +166,22 @@ Function Log {
 Function Get-DebugError {
     [cmdletbinding()]
     param (
-        $e,
-        $num = 1
+        [Parameter(Mandatory=$true, Position=0)]$e,
+        [Parameter(Mandatory=$false, Position=1)]$num = 1,
+        [Parameter(Mandatory=$false, Position=2)]$custom = ""
     )
-    Log "Error" "ERROR FOUND ################################################################################################################" 99
-    Log "Error" "Error - Line  [$($e.InvocationInfo.ScriptLineNumber)] - `$_ = $($e)" $num Red
-    Log "Error" "Error - Line  [$($e.InvocationInfo.ScriptLineNumber)] - StackTrace = $($e.ScriptStackTrace)" 99 Red
-    Log "Error" "Error - Line  [$($e.InvocationInfo.ScriptLineNumber)] - ExceptionType = $($e.Exception.GetType().FullName)" 99 Red
-    Log "Error" $(($e | Select-Object * | Format-List | Out-String)) 99 Red
-    #Log "Error" $(($e.Exception | Select-Object * | Format-List | Out-String)) 99 Red
+    try {
+        Log "Error" "ERROR FOUND ################################################################################################################" 99
+        Log "Error" "Error - Line  [$($e.InvocationInfo.ScriptLineNumber)] - `$_ = $($e)" $num Red -CustomBeginText $custom
+        Log "Error" "Error - Line  [$($e.InvocationInfo.ScriptLineNumber)] - StackTrace = $($e.ScriptStackTrace)" 99 Red
+        Log "Error" "Error - Line  [$($e.InvocationInfo.ScriptLineNumber)] - ExceptionType = $($e.Exception.GetType().FullName)" 99 Red
+        Log "Error" $(($e | Select-Object * | Format-List | Out-String)) 99 Red
+        #Log "Error" $(($e.Exception | Select-Object * | Format-List | Out-String)) 99 Red
+    }
+    catch {
+        write-host $_
+    }
+   
 }
 #endregion LOGS FUNCTION
 
@@ -750,7 +758,7 @@ function Import-GraphModuleInduviduals () {
         [version]$DesiredVersion,
 
         [Parameter(Mandatory=$false)]
-        [boolean]$AllowPreview = $false
+        [switch]$AllowPreview = $false
     )
 
     foreach ($item in $ModuleNecessaire) {
@@ -806,7 +814,7 @@ function Install-GraphModuleInduviduals () {
         [version]$DesiredVersion,
         
         [Parameter(Mandatory=$false)]
-        [boolean]$AllowPreview = $false
+        [switch]$AllowPreview = $false
     )
 
     foreach ($item in $ModuleNecessaire) {

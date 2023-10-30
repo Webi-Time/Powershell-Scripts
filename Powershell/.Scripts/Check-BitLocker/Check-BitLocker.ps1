@@ -63,9 +63,6 @@ Param
     [byte]$VerboseLvl = 2,
 
     [Parameter(mandatory=$false)]
-    [boolean]$AllowPreview = $false,
-    
-    [Parameter(mandatory=$false)]
     [boolean]$AllowBeta = $false
 )
 
@@ -133,19 +130,20 @@ Param
                 Import-Module -Name ActiveDirectory -Force -ErrorAction Stop
                 
                 Test-PackageProvider "NuGet" 
-                Test-PackageProvider "PowerShellGet"    
+                #Test-PackageProvider "PowerShellGet"    
 
-                $ModulesList = "Authentication","Users.Actions"
-                if(-not (Test-Modules  $ModulesList))
+                $GraphModulesList = "Authentication","Users.Actions"
+                #$OthersModulesList = "ExchangeOnlineManagement","MSOnline"
+                if(-not (Test-Modules ($GraphModulesList + $OthersModulesList)))
                 {
                     if($AllowBeta){
                         [string[]]$Global:AllMsGraphModule = (Find-Module "Microsoft.Graph*").Name
                     }else{
                         [string[]]$Global:AllMsGraphModule = (Find-Module "Microsoft.Graph*").Name | Where-Object {$_ -notlike "*beta*"}
                     }
-                    $vrs = $null   
-                    Install-GraphModuleInduviduals $ModulesList -AllowPreview $false -DesiredVersion $vrs
-                    Import-GraphModuleInduviduals $ModulesList -AllowPreview $false -DesiredVersion $vrs
+                    $vrs = $null 
+                    Install-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
+                    Import-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
                     
                 }
                 if(-not (Test-CertThumbprint $CertThumbprint -My)){throw "Problem with thumbprint in JSON file"}
