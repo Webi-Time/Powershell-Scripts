@@ -155,8 +155,8 @@ Begin
                             throw "Ne fonctionne pas avec Powershell 7"
                         }
                     else{$vrs =  $null; $vrsExOn =  $null; $vrsMsol = '1.1.183.66' } 
-                    Install-GraphModuleInduviduals $ModulesList -DesiredVersion $vrs
-                    Import-GraphModuleInduviduals $ModulesList -DesiredVersion $vrs
+                    Install-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
+                    Import-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
                     
                     Install-ModuleUserV2 "ExchangeOnlineManagement" -DesiredVersion $vrsExOn
                     Import-ModuleUserV2 "ExchangeOnlineManagement" -DesiredVersion $vrsExOn

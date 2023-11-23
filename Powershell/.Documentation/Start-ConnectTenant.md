@@ -6,8 +6,8 @@ authorized scopes, SKU information, user details, and more.
 
 ## Parameters
 ```powershell
-.\Start-ConnectTenant\Start-ConnectTenant.ps1 [[-VerboseLvl] <Byte>] [-LogOff] [[-AllowBeta] 
-<Boolean>] [<CommonParameters>]
+E:\NAS_Scripts\Github\Scripts\Powershell\.Scripts\Start-ConnectTenant\Start-ConnectTenant.ps1 [[-VerboseLvl] <Byte>] 
+[-LogOff] [[-AllowBeta] <Boolean>] [<CommonParameters>]
 
 ```
 ```powershell
@@ -56,11 +56,13 @@ PS> .\Start-ConnectTenant.ps1 -VerboseLvl 0
 ```
 
 ## Notes
-This script serves as a helpful tool for administrators working with Microsoft Graph API tenants. It offers a user-friendly 
+This script serves as a helpful tool for administrators working with Microsoft Graph API tenants. It offers a 
+user-friendly 
 menu-based interface to connect to the tenant and perform various tasks, including viewing tenant scopes, SKU details,
 and user information.
 
-The menu-driven interface simplifies interactions with the Microsoft Graph API, helping administrators manage their tenant 
+The menu-driven interface simplifies interactions with the Microsoft Graph API, helping administrators manage their 
+tenant 
 more effectively.
 
 This PowerShell script performs the following tasks:
@@ -79,7 +81,8 @@ This PowerShell script performs the following tasks:
 ## Related Links
 https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Documentation/Start-ConnectTenant.md
 
-https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Scripts/Start-ConnectTenant/Start-ConnectTenant.ps1
+https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Scripts/Start-ConnectTenant/Start-ConnectTenant.p
+s1
 
 ## Source Code
 ```powershell
@@ -183,8 +186,8 @@ Begin
                             throw "Ne fonctionne pas avec Powershell 7"
                         }
                     else{$vrs =  $null; $vrsExOn =  $null; $vrsMsol = '1.1.183.66' } 
-                    Install-GraphModuleInduviduals $ModulesList -DesiredVersion $vrs
-                    Import-GraphModuleInduviduals $ModulesList -DesiredVersion $vrs
+                    Install-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
+                    Import-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
                     
                     Install-ModuleUserV2 "ExchangeOnlineManagement" -DesiredVersion $vrsExOn
                     Import-ModuleUserV2 "ExchangeOnlineManagement" -DesiredVersion $vrsExOn

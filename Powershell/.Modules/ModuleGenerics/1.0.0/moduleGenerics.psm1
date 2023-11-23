@@ -994,7 +994,23 @@ switch ($typeOutput) {
     
 
 }
-
+function Start-WaitingTime($Minutes = 0,$Second = 0,$Activity = "RAS",$Status = "Status") 
+{
+   [double]$seconds = 0
+    $seconds += (New-TimeSpan -Minutes $Minutes).TotalSeconds
+    $seconds += (New-TimeSpan -Seconds $Second).TotalSeconds
+    
+    $doneDT = (Get-Date).AddSeconds($seconds)
+   
+    while($doneDT -gt (Get-Date)) 
+    {
+        $secondsLeft = $doneDT.Subtract((Get-Date)).TotalSeconds
+        $percent = ($seconds - $secondsLeft) / $seconds * 100
+        Write-Progress -Activity $Activity -Status $Status -SecondsRemaining $secondsLeft -PercentComplete $percent
+        [System.Threading.Thread]::Sleep(500)
+    }
+    Write-Progress -Activity $Activity -Status $Status -SecondsRemaining 0 -Completed
+}
 function Show-Param {
     param (
        $LesParam,
