@@ -4,16 +4,18 @@
 		"SpaceToUseByScriptsMax" : "5MB"
 	},
 	"Tenant": {		
-		"clientId": "xxx0e736-xxxx-4488-8699-xxxxxxxxxxxx",
-		"tenantId": "xxxxx255-4e75-xxxx-8d64-267xxxxxx242",
-		"clientCertificate": "A0B9FBC8A6D556XXXXXXDBD5EABF5114AF1CE3",
-		"tenantName"       : "m365x12345678.onmicrosoft.com"
+		"clientId": "7122fe5a-527f-43ee-ab84-ea1fadaf2cd9",
+		"tenantId": "7ecfed1c-ee3a-4c97-ac96-59dbcf2e60f4",
+		"clientCertificate": "036A2248A6C8587E6C86EE3EDCE11841345F1A8F",
+		"tenantName"       : "M365x32358914.onmicrosoft.com"
 	},
     "Script":{
 		"Mail" : {
-			"FromMail": "security.scripts@m365x12345678.onmicrosoft.com",
-			"ToMail": "MyEmailAdress@domain.com"		
+			"TemplatePath": "MailAzureAppExpire.html",
+			"FromMail": "Secure.Script@M365x32358914.onmicrosoft.com",
+			"ToMail": "damien.aubril@exakis-nelite.com"		
 		},
-		"LimitExpirationDays" : "30"
+		"LimitExpirationDays" : "390",
+		"ApplicationToExclude" :  ["EXO_App2","OtherApp"]
     }
 }

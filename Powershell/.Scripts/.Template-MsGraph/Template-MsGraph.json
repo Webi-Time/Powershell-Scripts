@@ -11,11 +11,12 @@
 	},
     "Script":{
 		"Mail" : {
-			"TemplatePath": "MailBitlocker.html",
+			"TemplatePath": "TemplateWithTable.html",
 			"FromMail": "Secure.Script@M365x32358914.onmicrosoft.com",
 			"ToMail": "damien.aubril@exakis-nelite.com"		
 		},
-		"OUBase" 		: "OU=Webi-Time,DC=webi-time,DC=adds",
+		"OUBase" 		: "OU=Computers,OU=Company,DC=mydomain,DC=adds",
+		"OUBaseExemple" : "DC=mydomain,DC=adds",
 		"ComputerToExclude" : ["ORDINATEUR_1", "ORDINATEUR_2"]
     }
 }

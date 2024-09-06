@@ -1,0 +1,8 @@
+New-Item -Path "E:\NAS_Scripts" -ItemType SymbolicLink -Target "\\nas.webi-time.fr\Nas\Perso\3 - Script & Programmation\"
+
+
+New-Item -Path "C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules\ModuleGenerics" -ItemType SymbolicLink -Target '\\nas.webi-time.fr\Nas\Perso\3 - Script & Programmation\.Modules\ModuleGenerics\'
+New-Item -Path "C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules\ModuleSharepoint" -ItemType SymbolicLink -Target '\\nas.webi-time.fr\Nas\Perso\3 - Script & Programmation\.Modules\ModuleSharepoint\'
+New-Item -Path "C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules\WBTDelegation" -ItemType SymbolicLink -Target '\\nas.webi-time.fr\Nas\Perso\3 - Script & Programmation\.Modules\WBTDelegation\'
+
+

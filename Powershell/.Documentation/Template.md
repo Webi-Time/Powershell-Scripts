@@ -4,7 +4,7 @@
 
 ## Parameters
 ```powershell
-.\.Template\Template.ps1 [[-VerboseLvl] <Byte>] [-AllowPreview] [-AllowBeta] 
+.\.Template\Template.ps1 [[-VerboseLvl] <Byte>] [-AllowBeta] 
 [<CommonParameters>]
 
 ```
@@ -16,14 +16,7 @@
     Accepter l entrée de pipeline :       false
     Accepter les caractères génériques :  false
 ```
-```powershell
--AllowPreview [<SwitchParameter>]
-    Obligatoire :                         false
-    Position :                            named
-    Valeur par défaut                     False
-    Accepter l entrée de pipeline :       false
-    Accepter les caractères génériques :  false
-```
+
 ```powershell
 -AllowBeta [<SwitchParameter>]
     Obligatoire :                         false
@@ -75,9 +68,6 @@ Param
     [Parameter(Mandatory = $false)]
     [ValidateSet(0, 1, 2, 3)]
     [byte]$VerboseLvl = 2,
-    
-    [Parameter(mandatory=$false)]
-    [switch]$AllowPreview = $false,
     
     [Parameter(mandatory=$false)]
     [switch]$AllowBeta = $false
@@ -163,8 +153,8 @@ Begin
                             throw "Ne fonctionne pas avec Powershell 7"
                         }
                     else{$vrs =  $null; $vrsExOn =  $null; $vrsMsol = '1.1.183.66' } 
-                    Install-GraphModuleInduviduals $GraphModulesList -AllowPreview $false -DesiredVersion $vrs
-                    Import-GraphModuleInduviduals $GraphModulesList -AllowPreview $false -DesiredVersion $vrs
+                    Install-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
+                    Import-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
                     
                     #Install-ModuleUserV2 "ExchangeOnlineManagement" -DesiredVersion $vrsExOn
                     #Import-ModuleUserV2 "ExchangeOnlineManagement" -DesiredVersion $vrsExOn

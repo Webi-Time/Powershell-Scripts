@@ -6,7 +6,7 @@ It also handles adding users to groups if that information is provided in the CS
 
 ## Parameters
 ```powershell
-.\Add-CompagnyUsers\Add-CompagnyUsers.ps1 [[-VerboseLvl] <Byte>] [<CommonParameters>]
+E:\NAS_Scripts\Github\Scripts\Powershell\.Scripts\Add-CompagnyUsers\Add-CompagnyUsers.ps1 [[-VerboseLvl] <Byte>] [<CommonParameters>]
 
 ```
 ```powershell

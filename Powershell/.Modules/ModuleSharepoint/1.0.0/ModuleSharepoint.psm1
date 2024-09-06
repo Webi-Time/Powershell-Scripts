@@ -90,8 +90,12 @@ function Get-MgListAllSitesInfo {
         try{
             $siteGraph = Get-MgSite -SiteId $site.Id -Property Id,DisplayName,Name,Description,WebUrl,Drive,CreatedDateTime,LastModifiedDateTime -ExpandProperty 'Drive' -ErrorAction Stop
         }catch{
-            Log "Script" "Error - Not Found : $($site.DisplayName) | $($site.WebUrl) " 1 Red
-            continue
+            try{
+                $siteGraph = Get-MgSite -SiteId $site.Id -Property Id,DisplayName,Name,Description,WebUrl,Drive,CreatedDateTime,LastModifiedDateTime -ErrorAction Stop
+            }catch{
+                Log "Script" "Error - Not Found : $($site.WebUrl) " 1 Red
+                continue
+            }           
         }
 
         $Script:All_Sites += [ordered]@{
@@ -101,7 +105,33 @@ function Get-MgListAllSitesInfo {
 
     Return $Script:All_Sites
 }
+function Get-MgListAllSubSitesInfo {
+    param (
+        $AllSites
+    )
+     
+    [hashtable]$Script:All_Sites = [ordered]@{}
+    
+    foreach ($site in $AllSites) {
+        try{
+            $siteGraph = Get-MgSubSite -SiteId $site.Id -Property Id,DisplayName,Name,Description,WebUrl,Drive,CreatedDateTime,LastModifiedDateTime -ExpandProperty 'Drive' -ErrorAction Stop
+        }catch{
+            try{
+                $siteGraph = Get-MgSubSite -SiteId $site.Id -Property Id,DisplayName,Name,Description,WebUrl,Drive,CreatedDateTime,LastModifiedDateTime -ErrorAction Stop
+            }catch{
+                Log "Script" "Error - Not Found : $($site.WebUrl) " 1 Red
+                continue
+            }           
+        }
+        if($siteGraph){
+            $Script:All_Sites += [ordered]@{
+                $siteGraph.WebUrl = $siteGraph;
+            }
+        }
+    }
 
+    Return $Script:All_Sites
+}
 function Get-PNPOwners {
     param (
         $Connexion,
@@ -109,13 +139,41 @@ function Get-PNPOwners {
     )
     [string[]]$owns = @()
     if ($PNPSite.Owner) {
-        $owns = (Get-PnPUser -Includes UserId,Title,UserPrincipalName,Email -Connection $Connexion | ? Email -eq $PNPSite.Owner).UserPrincipalName
+        $owns = (Get-PnPUser -Includes UserId,Title,UserPrincipalName,Email -Connection $Connexion | Where-Object Email -eq $PNPSite.Owner).UserPrincipalName
+        # Ajouter Enable / country / JobTitle
     }elseif($PNPSite.GroupId) {
         $owns = (Get-PnPMicrosoft365Group -Identity $PNPSite.GroupId -IncludeOwners -Connection $Connexion).Owners.UserPrincipalName # | Where-Object {$null -ne $_} # | % {if($null -eq $_.Email){$_.UserPrincipalName}else{$_.Email}}
     }
     return $owns
 }
+function Get-ExtraInfo {
+    param (
+        [string[]]$owners
+    )
+    [psobject[]]$ExtraInfo = @()
+    foreach ($own in $owners) {
+     
+        #$ExtraInfo += Get-MgUser -UserId $own -Property AccountEnabled,UserPrincipalName,DisplayName,Surname,GivenName,CompanyName,JobTitle,Country,Department,DeletedDateTime | select  AccountEnabled,UserPrincipalName,DisplayName,Surname,GivenName,CompanyName,JobTitle,Country,Department,DeletedDateTime
+        $ExtraInfo += Get-MgUser -UserId $own -Property AccountEnabled,UserPrincipalName,CompanyName,Country | Select-Object AccountEnabled,UserPrincipalName,CompanyName,Country
+        
+        # Ajouter Enable / country / JobTitle
+        <# Properties disponible
+            AccountEnabled,UserPrincipalName,DisplayName,Surname,GivenName,CompanyName,JobTitle,Country,Department,DeletedDateTime
+            "EmployeeId":  null,
+            "EmployeeType":  null,  
+            "HireDate":  null,
+            "Id":  "4ec0e4cf-0c69-4c9d-8d5d-bbfe6caf05ad",
+            "Mail":  "admin@M365x78018216.onmicrosoft.com",
+            "MobilePhone":  "425-555-0101",
+            "PostalCode":  null,
+            "PreferredLanguage":  "en",
+            "State":  null,
+            "StreetAddress":  null
+        #>
 
+    }
+    return $ExtraInfo
+}
 function Add-ListItemPNP {
     param (        
         $SDAPConnexion,
@@ -126,10 +184,11 @@ function Add-ListItemPNP {
         Log "Script" "Creating item: $($fields.Site_x0020_Name)" 1 Green
         # Attempt to add a new item to the "testSDAP" list
         $null = Add-PnPListItem -List $SDAP_List_Name -Connection $SDAPConnexion -Values $fields 
-        Log "Action" "Creating item: $($fields.Site_x0020_Name)" 5  
+        Log "Action" "`t-Creating item: $($fields.Site_x0020_Name)" 5  
+        Log "Script" "`t-Item creation : $($fields | Out-String -Stream)" 3 DarkGreen
     }
     catch {
-        Log "Script" "ERROR - Error during item creation : $($fields | Out-String -Stream)" 1 Red
+        Log "Script" "`t-ERROR - Item NOT Create - Error during item creation : $($fields | Out-String -Stream)" 1 Red
         Get-DebugError $_
     }
 }
@@ -145,10 +204,11 @@ function Update-ListItemPNP {
         Log "Script" "Updating item: [$SDAP_List_ItemID] - $($fieldsToUpdate.Site_x0020_Name)" 1 Green
         # Attempt to add a new item to the "testSDAP" list
         Set-PnPListItem -List $SDAP_List_Name -Identity $SDAP_List_ItemID -Connection $SDAPConnexion -Values $fieldsToUpdate 
-        Log "Action" "Updating item : [$SDAP_List_ItemID] - $($fieldsToUpdate.Site_x0020_Name)" 5  
+        Log "Action" "`t-Updating item : [$SDAP_List_ItemID] - $($fieldsToUpdate.Site_x0020_Name)" 5  
+        Log "Script" "`t-Item Update : $($fieldsToUpdate | Out-String -Stream)" 3 DarkGreen
     }
     catch {
-        Log "Script" "ERROR - Error during item creation : $($fieldsToUpdate | Out-String -Stream)" 1 Red
+        Log "Script" "`t-ERROR - Item NOT Update - Error during item update : $($fieldsToUpdate | Out-String -Stream)" 1 Red
         Get-DebugError $_
     }
 }

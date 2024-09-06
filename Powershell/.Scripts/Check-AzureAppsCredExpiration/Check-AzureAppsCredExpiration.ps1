@@ -9,17 +9,19 @@
     retrieval and email notifications.
 
 .PARAMETER VerboseLvl
-    Verbosity level for logging information. By default, it's set to 2.
-        - `0`: Minimal logging. Only critical errors are displayed.
-        - `1`: Basic logging. Displays basic information and errors.
-        - `2`: Standard logging. Displays standard log messages, basic information, and errors.
-        - `3`: Verbose logging. Displays detailed log messages, standard information, and errors.
+    Specifies the level of verbosity for logging. Logs are always written to a file, but console output varies:
+    - `0`: No console output (silent mode). All output is logged to the file.
+    - `1`: Minimal logging. Root level information and errors are displayed.
+    - `2`: Basic logging. Displays basic information and errors. (DEFAULT)
+    - `3`: Standard logging. Displays standard log messages, basic information, and errors.
+    - `4`: Verbose logging. Displays detailed log messages, standard information, and errors.
+    - `5`: Ultra verbose logging. Displays debug information, detailed log messages, standard information, and errors.
 
 .PARAMETER AllowBeta
-    If set to $true, the script will allow the installation of beta versions of Microsoft Graph modules. By default, it's 
-    set to $false.
+    If set to $true, the script will allow the installation of beta versions of Microsoft Graph modules. By default, it's set to $false.
 
 .INPUTS
+    - JSON File with tenant information
     - LimitExpirationDays : This parameter is set to "90" and indicates the number of days before expiration for sending an e-mail alert.
 
 .OUTPUTS
@@ -36,20 +38,15 @@
     https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Scripts/Check-AzureAppsCredExpiration/Check-AzureAppsCredExpiration.ps1
 
 .NOTES
-    This script is designed to help Azure administrators proactively manage and monitor Azure Application credentials, 
-    ensuring that no credentials expire without notice.
-
-    This PowerShell script performs the following tasks:
-        1. Sets up the necessary environment and configuration, including loading required modules.
-        2. Retrieves information about Azure Applications, their credentials, and ownership using the Microsoft Graph API.
-        3. Identifies credentials that are expired or set to expire soon based on the specified time frame.
-        4. Generates HTML-formatted email content with details of expired and expiring credentials.
-        5. Sends email alerts for expired or expiring Azure Application credentials.
-        6. The script logs the outcome, including any sent email notifications, and its execution time.
+    Ensure the [ModuleGenerics] module is installed and that you have the necessary permissions to access Azure AD data.
+    Ensure that the App Registration is granted the following permissions:
+        - Microsoft Graph -> Mail.send
+        - Microsoft Graph -> Application.Read.All
 
     Author = 'AUBRIL Damien'
     Creation Date : 26/10/2023
-    Version : 1.0
+    Version : 2.0
+    Version Date : 05/09/2024
 #>
 
 [cmdletbinding()]
@@ -59,16 +56,19 @@ Param
     [byte]$VerboseLvl = 2,
 
     [Parameter(mandatory=$false)]
-    [boolean]$AllowBeta = $false
+    [switch]$AllowBeta = $false
 )
-
-
+   
+Begin 
+{
 #region Begin
     try{
         Clear-Host
         $StartScript = Get-Date
         if($VerboseLvl -ne 0){Write-host "$(Get-Date -f 'dd/MM/yyyy HH:mm:ss') - Script start : " -f Cyan -NoNewline; Write-host "[$($MyInvocation.MyCommand.Name)]" -f Red}
         $ErrorActionPreference = 'Stop'
+
+                
 
         #region Script Variables
 
@@ -108,23 +108,33 @@ Param
                 [string]$clientId        = $Tenant_Param.clientId
                 [string]$tenantId        = $Tenant_Param.tenantId
                 [string]$CertThumbprint  = $Tenant_Param.clientCertificate
-             
+
             # Variables du script
                 [string]$FromMail       = $Script_Param.Mail.FromMail
                 [string]$ToMail         = $Script_Param.Mail.ToMail
-    
-                [string]$LimitExpirationDays = $Script_Param.LimitExpirationDays
-                
 
-    
+                [string]$mailTemplatePath = $Script_Param.Mail.TemplatePath
+                [string]$errMailAD = $null
+
+                [string]$LimitExpirationDays = $Script_Param.LimitExpirationDays
+                [string[]]$exceptionList     = $Script_Param.ApplicationToExclude
+                
         #endregion JSON Config
 
         #region Modules
-            
-            try{
-                Write-Output "Loading Modules"
+            Write-Output "Loading Modules"
+            try
+            {
                 Import-Module -Name ModuleGenerics -Force -ErrorAction Stop
-                
+            }
+            catch 
+            {
+                Write-host "You must place the [ModuleGenerics] in one of the following appropriate folders before running the scripts : `n`r`t - $($env:USERPROFILE)\Documents\WindowsPowerShell\Modules`n`r`t - C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules" -f Red
+                Write-host "More information at the begin of psm1 file" -ForegroundColor Yellow
+                exit 1
+            } 
+            try
+            {  
                 Test-PackageProvider "NuGet" 
                 #Test-PackageProvider "PowerShellGet"    
 
@@ -138,27 +148,39 @@ Param
                         [string[]]$Global:AllMsGraphModule = (Find-Module "Microsoft.Graph*").Name | Where-Object {$_ -notlike "*beta*"}
                     }
                     $vrs = $null 
-                    Install-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
-                    Import-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs
-                    
+                    Install-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs 
+                    Import-GraphModuleInduviduals $GraphModulesList -DesiredVersion $vrs 
+
                 }
-                if(-not (Test-CertThumbprint $CertThumbprint -My)){throw "Problem with thumbprint in JSON file"}
+                if(-not (Test-CertThumbprint $CertThumbprint -My)){
+                    throw "No matching certificates with Thumbprint: $CertThumbprint, verify JSON File or import the certificate"
+                }
 
             }
             catch 
-            {                
-                Write-Output $_.Exception.Message
+            {
+                Get-DebugError $_
                 exit 1
             }
 
         #endregion Modules
 
         #region function
-    
+           # N.A
         #endregion function
 
-        
         #region Script Prerequisites
+
+            try {
+                if ($mailTemplatepath -contains ":") {
+                    [string]$mailTemplate       = Get-Content "$mailTemplatepath" -Raw
+                }else{
+                    [string]$mailTemplate       = Get-Content "$Path_Root\$mailTemplatepath" -Raw
+                }
+            }
+            catch {
+                Get-DebugError $_
+            }
 
             Show-Param -LesParam $PSBoundParameters
 
@@ -174,40 +196,46 @@ Param
         Get-DebugError $_ 
         exit 1
     }
-    
-#endregion Begin
 
+#endregion Begin
+}
+Process 
+{
 #region Process
     try 
     {
-        Log "Script" "Start of script : $($MyInvocation.MyCommand.Name)" 99 Cyan  
-
-        Disconnect-MsGraphTenant -Type Silently | Out-Null        
+        Disconnect-MsGraphTenant -Type Silently | Out-Null
         Connect-MsGraphTenant -ClientId $clientId -TenantId $tenantId -CertThumbprint $CertThumbprint
-        
+
         try{       
-            $Apps = Get-MgApplication -All -PageSize 500
+            $Apps = Get-MgApplication -All -PageSize 500 -ErrorAction Stop
         }
         catch{
-            Log "Script" "Unable to retrieve application information" 1 Red
-            Get-DebugError $_
-            Disconnect-MsGraphTenant
-            exit 1
+            Log "Script" "Unable to retrieve application" 1 Red
+                $errMailAD += "ERROR DETECTED - Unable to retrieve application. <br> $($_.Exception.Message)"
+                Get-DebugError $_
         }
     
     
         $today = Get-Date
         $credentials = @()
     
-        $Apps | ForEach-Object{
+        
+        foreach ($ap in $Apps) 
+        {
+            if ($exceptionList.Contains($ap.DisplayName)) { 
+                continue 
+            }
+            
             try{       
-                $aadAppObjId = $_.Id
-                $nameApp = $_.DisplayName
-                $app = Get-MgApplication -ApplicationId $aadAppObjId 
-                $owner = Get-MgApplicationOwner -ApplicationId $aadAppObjId
+                $aadAppObjId = $ap.Id
+                $nameApp = $ap.DisplayName
+                $app = Get-MgApplication -ApplicationId $aadAppObjId -ErrorAction Stop
+                $owner = Get-MgApplicationOwner -ApplicationId $aadAppObjId -ErrorAction Stop
             }
             catch{
                 Log "Script" "Unable to retrieve information from [$nameApp] application" 1 Red
+                $errMailAD += "ERROR DETECTED - Unable to retrieve information from [$nameApp] application. <br> $($_.Exception.Message)"
                 Get-DebugError $_
                 continue
             }
@@ -216,7 +244,7 @@ Param
             $app.KeyCredentials | ForEach-Object{
                 $credentials += [PSCustomObject] @{
                     DisplayName = $app.DisplayName;
-                    CredentialType = "KeyCredentials (Certificates)";
+                    CredentialType = "Certificate";
                     StartDate = $_.StartDateTime;
                     ExpiryDate = $_.EndDateTime;
                     Expired = if(([DateTime]$_.EndDateTime) -lt $today) { "Yes" }else{"No"};
@@ -231,7 +259,7 @@ Param
             $app.PasswordCredentials | ForEach-Object{
                 $credentials += [PSCustomObject] @{
                     DisplayName = $app.DisplayName;
-                    CredentialType = "PasswordCredentials (Client Secret)";                
+                    CredentialType = "Client Secret";                
                     StartDate = $_.StartDateTime;
                     ExpiryDate = $_.EndDateTime;
                     Expired = if(([DateTime]$_.EndDateTime) -lt $today) { "Yes" }else{"No"};
@@ -243,49 +271,64 @@ Param
                 }
             }
         }
-        
-    
         $credentialsExpired = $credentials | Where-Object {$_.Expired -eq "Yes"} 
         $credentialsExpireSoon = $credentials | Where-Object {$_.Expired -eq "No" -and $_.ExpireSoon -eq "Yes"}
-        
-        $SendMail = $False
-        $body = ""
-        if([string]::IsNullOrEmpty($credentialsExpired)) {
-             $body += "<h1>Expired certificates :</h1>  <h2>None !</h2> "
-        }
-        else {
-            $body += $credentialsExpired | ConvertTo-Html -Fragment -PreContent "<h1>Expired certificates :</h1>"
-            $SendMail = $true
-        }
-        if([string]::IsNullOrEmpty($credentialsExpireSoon)) {
-            $body += "<h1>Certificates expire soon :</h1> <h2>None !</h2> "
-        }
-        else {
-            $body += $credentialsExpireSoon | ConvertTo-Html -Fragment -PreContent "<h1>Certificates expire soon :</h1>"
-            $SendMail = $true
-        }
-    
-        if ($SendMail){
 
-    
-            Log "Script" "Expired or expiring credentials have been found... " 1 Yellow
-            [string]$ObjectMessage = "Credential Azure App expire soon !"
-            [string]$BodyMessage = ConvertTo-Html -head $Global:cssMailGeneral -Body $body
-    
-            try{
-                SendMail -FromMail $FromMail -ToMail $ToMail -MailSubject $ObjectMessage -MailBody $BodyMessage
-                Write-Output "Mail sent - Application Expire soon"
-                Log "Script" "Mail sent - Application Expire soon" 2 Yellow
-            } catch { 
+
+        $bodyExpired = ""
+        $bodyExpireSoon = ""
+        if(-not[string]::IsNullOrEmpty($credentialsExpired)) 
+        {
+            $bodyExpired += ($credentialsExpired | Select-Object DisplayName,CredentialType,StartDate,ExpiryDate,ExpireIn,Usage,Owners | ConvertTo-Html -Fragment -As Table) -replace "<table>","<table id='ExpireTable'>"
+        }else{
+            $bodyExpired += "<strong>Aucun</strong>"
+        }
+
+        if(-not [string]::IsNullOrEmpty($credentialsExpireSoon)) 
+        {
+            $bodyExpireSoon += ($credentialsExpireSoon | Select-Object DisplayName,CredentialType,StartDate,ExpiryDate,ExpireIn,Usage,Owners | ConvertTo-Html -Fragment -As Table) -replace "<table>","<table id='ExpireTable'>"
+        }else{
+            $bodyExpireSoon += "<strong>Aucun</strong>"
+        }
+
+        if ((-not [string]::IsNullOrEmpty($credentialsExpired)) -or (-not [string]::IsNullOrEmpty($credentialsExpireSoon)) -or (-not [string]::IsNullOrEmpty($errMailAD)) )
+        {
+            if (-not [string]::IsNullOrEmpty($errMailAD)){$errMailAD += "See error log for more information"}
+
+            [string]$ObjectMessage = "AZURE APP - Azure App Credential expire soon !"
+            [string]$BodyMessage = $mailTemplate -replace "!--TABLE_EXPIRED--!" , $bodyExpired `
+                                                 -replace "!--TABLE_EXPIRESOON--!", $bodyExpireSoon `
+                                                 -replace "!--ERROR_MAIL--!", $errMailAD
+                                                 
+            Log "Script" "Expired or expiring credentials have been found..."  1 Red
+            try
+            {
+                if (-not [string]::IsNullOrEmpty($errMailAD))
+                {
+                    $errMailAD += "See error log for more information"
+                    $ErrorLogFile = Get-ChildItem "$global:Path_Logs\Error" -Recurse | Where-Object {$_.Name -like "*$($global:Date_Logs_File)*" | Select-Object -First 1} 
+                    SendMail -FromMail $FromMail -ToMail $ToMail -MailSubject $ObjectMessage -MailBody $BodyMessage -Attachments $ErrorLogFile.FullName
+                    Log "Script" "Mail sent - Application Expire soon and script error" 2 Yellow
+                }
+                else
+                {
+                    SendMail -FromMail $FromMail -ToMail $ToMail -MailSubject $ObjectMessage -MailBody $BodyMessage
+                    Log "Script" "Mail sent - Application Expire soon" 2 Yellow
+                }
+            } 
+            catch 
+            { 
                 Log "Script" "Error - Unable to send mail" 1 Red
                 Get-DebugError $_
                 Disconnect-MsGraphTenant
                 exit 1
             }
-        }else{
-            Write-Output "Mail not sent - None Application Expire soon"
         }
-
+        else
+        {
+            Log "Script" "Mail not sent - None Application Expire soon" 2 Green
+        }
+    
         Disconnect-MsGraphTenant
     }
     catch {
@@ -293,20 +336,28 @@ Param
         exit 1
     }
 #endregion Process
-
+}
+End 
+{
 #region End
-    try{
-
+    try
+    {
         $Temps = ((Get-Date )-(Get-Date $StartScript)).ToString().Split('.')[0]
         Log "Script" "Running time : " 1 Cyan -NoNewLine ;  Log "Script" "[$($Temps.Split(':')[0])h$($Temps.Split(':')[1])m$($Temps.Split(':')[2])s]" 1 Red -NoDate
         Log "Script" "Script end : " 1 Cyan -NoNewLine ;  Log "Script" "[$($MyInvocation.MyCommand.Name)]" 1 Red -NoDate
-
         exit 0
     }
-    catch {
+    catch 
+    {
         Get-DebugError $_
         exit 1
     }
-#endregion End
+#endregion End 
+}
+
+
+
+
+
 
 

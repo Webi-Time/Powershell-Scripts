@@ -4,9 +4,9 @@
 		"SpaceToUseByScriptsMax" : "5MB"
 	},
 	"Tenant": {		
-		"clientId": "6a796c9f-e43e-40de-a4d9-e711f1cc0386",
-		"tenantId": "a2940a06-0201-4497-98d6-01f2b0bbc41f",
-		"clientCertificate": "8274B95AE7D12787F6FDA1E68BD2294957D2DCB5",
+		"clientId": "29c588ad-8c4b-496c-becf-4dce2b97fded",
+		"tenantId": "1aafbd79-5bc7-4c77-9ece-a442c3826132",
+		"clientCertificate": "1E0A9DE4FF9B3182CED8D244B4D70CBBD47DDE69",
 		"tenantName"       : "M365x78018216.onmicrosoft.com"
 	},
     "Script":{

@@ -4,16 +4,17 @@
 		"SpaceToUseByScriptsMax" : "5MB"
 	},
 	"Tenant": {		
-		"clientId": "58e0e736-efae-4488-8699-2ce5d40daba7",
-		"tenantId": "e81fd255-4e75-4769-8d64-267c4abb0242",
-		"clientCertificate": "A0B9FBC8A6D5560EDBBD78DBD5EABF5114AF1CE3",
-		"tenantName"       : "m365x28055571.onmicrosoft.com"
+		"clientId": "7122fe5a-527f-43ee-ab84-ea1fadaf2cd9",
+		"tenantId": "7ecfed1c-ee3a-4c97-ac96-59dbcf2e60f4",
+		"clientCertificate": "036A2248A6C8587E6C86EE3EDCE11841345F1A8F",
+		"tenantName"       : "M365x32358914.onmicrosoft.com"
 	},
     "Script":{
 		"Mail" : {
-			"FromMail": "security.scripts@M365x28055571.onmicrosoft.com",
+			"TemplatePath": "MailSizeMailBox.html",
+			"FromMail": "Secure.Script@M365x32358914.onmicrosoft.com",
 			"ToMail": "damien.aubril@exakis-nelite.com"		
 		},
-		"seuilMailAlert" : "50GB"
+		"seuilMailAlert" : "5MB"
     }
 }

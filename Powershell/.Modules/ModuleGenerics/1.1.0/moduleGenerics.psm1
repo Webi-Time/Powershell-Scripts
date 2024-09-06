@@ -1,4 +1,4 @@
-## You must place the module in one of the appropriate locations before running the scripts
+﻿## You must place the module in one of the appropriate locations before running the scripts
 ##      - C:\Users\<USERS>\Documents\WindowsPowerShell\Modules
 ##      - C:\Program Files\WindowsPowerShell\Modules
 ##      - C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules
@@ -16,20 +16,21 @@ $ErrorActionPreference = 'Stop'
 #############################################################################
 
 #region LOGS FUNCTION
+
 <#
     .SYNOPSIS
-    Write log messages to files and/or the PowerShell console, with support for custom formatting, colors, and verbosity levels.
+        Write log messages to log files and/or the PowerShell console.
 
-    .Description
-    The Log function is designed to create log entries in specified files and/or display them in the PowerShell console. It supports the creation 
-    of logs in multiple context-specific folders, custom file names, verbosity levels, and colored output in the console. You can also control log 
-    formatting with options to include/exclude timestamps, line breaks, or even suppress file output entirely.
+    .DESCRIPTION
+        The Log function is used to write log messages to log files and/or display them in the PowerShell console. 
+        It supports custom log folders, log file names, log levels, and log colors. You can specify whether to write logs to files, 
+        whether to include timestamps, and whether to include line breaks.
 
     .PARAMETER Contexts
-    Specifies an array of context folders where log files will be written.
+        Specifies an array of context folders where log files will be written.
 
     .PARAMETER sInput
-    Specifies an array of log messages to be written.
+        Specifies an array of log messages to be written.
 
     .PARAMETER lvl
         Specifies the log level. Log messages will be displayed in the console if the VerboseLvl is greater than or equal to this level.
@@ -45,7 +46,6 @@ $ErrorActionPreference = 'Stop'
         - `5`: Diagnostic logging. Displays diagnostic information, debug information, detailed log messages, standard information, and errors.
 
         By specifying a verbosity level, you can filter the log output to focus on the information that is most relevant to your needs.
-
 
     .PARAMETER color
         Specifies the color for log messages in the console.
@@ -81,24 +81,35 @@ $ErrorActionPreference = 'Stop'
 
 #>
 Function Log {
+    [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$true, Position=0)][string[]]$Contexts,
         [Parameter(Mandatory=$true, Position=1)][string[]]$sInput, 
         [Parameter(Mandatory=$false, Position=2)][int]$lvl = 0,
         [Parameter(Mandatory=$false, Position=3)][string]$color = "Cyan",
-        [Parameter(Mandatory=$false, Position=4)][string]$LogPath = $global:Path_Logs,
+        [Parameter(Mandatory=$false, Position=4)][string[]]$LogPath = $global:Path_Logs,
         [Parameter(Mandatory=$false, Position=5)][string]$CustomName ="",
         [Parameter(Mandatory=$false, Position=6)][switch]$NoOutPut,
         [Parameter(Mandatory=$false, Position=7)][switch]$NoNewLine,
         [Parameter(Mandatory=$false, Position=8)][switch]$NoDate,
         [Parameter(Mandatory=$false, Position=9)][string]$CustomBeginText =""
     ) 
-    if([string]::IsNullOrEmpty($global:Path_Logs)){
-        $global:Path_Logs = "C:\DefautsScript-Logs\"
+     if([string]::IsNullOrEmpty($LogPath)){
+        $global:Path_Logs = @("C:\DefautsScript-Logs\")
+        $LogPath = @("C:\DefautsScript-Logs\")
+        Write-Verbose "LogPath Empty => We set it to default location [C:\DefautsScript-Logs\]"
     }
-    # Retrieve the full path of all folders (contexts) to write logs
-        $logFolders = $Contexts | ForEach-Object { Join-Path $LogPath $_ }
     
+    if([string]::IsNullOrEmpty($global:Date_Logs_File)){
+        $global:Date_Logs_File = Get-Date -Format "yyyy-MM-dd-HH-mm-ss"
+        Write-Verbose "Date_Logs_File Empty => We set it to $Date_Logs_File"
+    }
+
+    # Retrieve the full path of all folders (contexts) to write logs
+    $logFolders = @()
+    foreach ($lp in $LogPath) {
+        $logFolders += $Contexts | ForEach-Object { Join-Path $lp $_ }
+    }
     # Retrieve the full paths of the log files to write
         $sLogFile = Join-Path $logFolders ("Log_" + $global:Date_Logs_File + $CustomName +".log")
     
@@ -114,19 +125,24 @@ Function Log {
 
         # For each log file to write to,
         $sLogFile | ForEach-Object { 
-           
-            if ($noNewLine) 
-            {                     
-                $sLine | Out-File $_ -Append -Force -NoNewline
+            try {
+                if ($noNewLine) 
+                {                     
+                    $sLine | Out-File $_ -NoNewline -Append -Force 
+                }
+                elseif ($noDate) 
+                {
+                    $sInput -join "`r`n" | Out-File $_ -Append -Force
+                }
+                else
+                {
+                    $sLine -join "`r`n" | Out-File $_ -Append -Force
+                }
             }
-            elseif ($noDate) 
-            {
-                $sInput -join "`r`n" | Out-File $_ -Append -Force
+            catch {
+                Get-DebugError $_
             }
-            else
-            {
-                $sLine -join "`r`n" | Out-File $_ -Append -Force
-            }
+            
         }
     }
     # Display in the PowerShell console if the VerboseLvl is greater than or equal to the defined level
@@ -937,6 +953,112 @@ Function Test-PackageProvider {
 #############################################################################
 
 #region OUTPUT FUNCTION
+
+function New-EncryptedPassword {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)][string]$KeyFile,
+        [Parameter(Mandatory = $true)][string]$PwdFilePath,
+        [Parameter(Mandatory = $false)][string]$PwdFileName = "AES_PASSWORD_FILE.txt"
+    )
+    $PwdFileFullName = "$PwdFilePath\$PwdFileName"
+    if(Test-Path $KeyFile)
+    {
+        try {
+            [byte[]]$Key = Get-Content $KeyFile 
+        }
+        catch {
+            Log "Script" "Impossible d'ouvrir le fichier Key : [$KeyFile]" 1 Red
+            Log "Script" "Vous pouvez utiliser la commande New-AESKeyFile pour créer une clé AES" 1 DarkRed
+            Exit 0
+        }
+
+        # test du path
+        if (Test-Path $PwdFilePath -PathType Container) {
+            Log "Script" "The directory exists." 2 DarkGreen
+        } else {
+            Log "Script" "The directory does not exist. Verifier le parametre -PwdFilePath" 1 DarkRed
+            exit 0
+        }
+
+        # test du nom + si existe
+        if(Test-Path $PwdFileFullName){
+            Log "Script" "Le fichier existe, merci de recommencer avec un nom different pour ne pas ecraser un autre mot de passe" 1 DarkRed
+            exit 0
+        }else{
+            Log "Script" "Le fichier n'existe pas." 2 DarkGreen
+        }
+
+        try {
+            Log "Script" "Mot de passe du compte : " 1 DarkMagenta -NoNewLine
+            $Password = Read-Host -AsSecureString 
+            $Password | ConvertFrom-SecureString -key $Key | Out-File $PwdFileFullName -Verbose
+
+            Log "Script" "Le mot de passe a été chiffré avec la clé" 1 DarkGreen
+        
+        } catch {
+            Get-DebugError $_
+        
+        }
+    }
+    else
+    {
+        Log "Script" "Le fichier n'existe pas" 1 Red
+        Log "Script" "Vous pouvez utiliser la commande New-AESKeyFile pour créer une clé AES" 1 DarkRed
+    }
+  
+}
+
+
+function New-AESKeyFile {
+    param (
+        [Parameter(Mandatory = $true)][string]$KeyFilePath,
+        [Parameter(Mandatory = $false)][string]$KeyFileName = "AES_KEY_FILE.key",
+        [Parameter(Mandatory = $false)][ValidateSet(128,192,256)][int]$Bits = 256
+    )
+
+    if    ($Bits -eq 256){[Byte]$KeyLength = 255}
+    elseif($Bits -eq 192){[Byte]$KeyLength = 192}
+    else                 {[Byte]$KeyLength = 128}
+
+
+
+    $KeyFileFullName = "$KeyFilePath\$KeyFileName"
+
+    # test du path
+    if (Test-Path $KeyFilePath -PathType Container) {
+        Log "Script" "The directory exists." 2 DarkGreen
+    } else {
+        Log "Script" "The directory does not exist. Verifier le parametre -KeyFilePath" 1 DarkRed
+        exit 0
+    }
+
+    # test du nom + si existe
+    if(Test-Path $KeyFileFullName){
+       Log "Script" "Le fichier existe, merci de recommencer avec un nom different pour ne pas ecraser un autre clé" 1 DarkRed
+        exit 0
+    }else{
+        Log "Script" "Le fichier n'existe pas." 2 DarkGreen
+    }
+
+    # Create the AES key file
+    try {
+        [Byte]$Value = $Bits / 8
+        $Key = New-Object Byte[] $Value
+        [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($Key)
+       
+        $Key | out-file $KeyFileFullName -Encoding utf8 -Verbose
+
+
+        Log "Script" "The key file $KeyFile was created successfully"
+    } catch {
+        Get-DebugError $_
+    }
+ 
+    
+}
+
+
 <# WSize
 .SYNOPSIS
     Convert a numeric size value into a human-readable format.
@@ -1440,9 +1562,6 @@ function WriteJobProgress
     }
 }
 
-
-
-
 function Show-JobProgress {
     [CmdletBinding()]
     param(
@@ -1486,7 +1605,6 @@ function Show-JobProgress {
         }
     }
 }
-
 
 function waitJobsPlease ($JobsPrefixName) {
 

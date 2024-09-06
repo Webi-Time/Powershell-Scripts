@@ -6,8 +6,7 @@ authorized scopes, SKU information, user details, and more.
 
 ## Parameters
 ```powershell
-E:\NAS_Scripts\Github\Scripts\Powershell\.Scripts\Start-ConnectTenant\Start-ConnectTenant.ps1 [[-VerboseLvl] <Byte>] 
-[-LogOff] [[-AllowBeta] <Boolean>] [<CommonParameters>]
+E:\NAS_Scripts\Github\Scripts\Powershell\.Scripts\Start-ConnectTenant\Start-ConnectTenant.ps1 [[-VerboseLvl] <Byte>] [-LogOff] [[-AllowBeta] <Boolean>] [<CommonParameters>]
 
 ```
 ```powershell
@@ -56,13 +55,11 @@ PS> .\Start-ConnectTenant.ps1 -VerboseLvl 0
 ```
 
 ## Notes
-This script serves as a helpful tool for administrators working with Microsoft Graph API tenants. It offers a 
-user-friendly 
+This script serves as a helpful tool for administrators working with Microsoft Graph API tenants. It offers a user-friendly 
 menu-based interface to connect to the tenant and perform various tasks, including viewing tenant scopes, SKU details,
 and user information.
 
-The menu-driven interface simplifies interactions with the Microsoft Graph API, helping administrators manage their 
-tenant 
+The menu-driven interface simplifies interactions with the Microsoft Graph API, helping administrators manage their tenant 
 more effectively.
 
 This PowerShell script performs the following tasks:
@@ -81,8 +78,7 @@ This PowerShell script performs the following tasks:
 ## Related Links
 https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Documentation/Start-ConnectTenant.md
 
-https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Scripts/Start-ConnectTenant/Start-ConnectTenant.p
-s1
+https://github.com/Webi-Time/Powershell-Scripts/blob/main/Powershell/.Scripts/Start-ConnectTenant/Start-ConnectTenant.ps1
 
 ## Source Code
 ```powershell
@@ -153,10 +149,10 @@ Begin
             # Variables du script
 
                 ## Credential encodé avec MessageOpsPasswordObfuscator.ps1 ##
-                $password = ""
-                $key = ""
-                $passwordSecure = ConvertTo-SecureString -String $password -Key ([Byte[]]$key.Split(" "))
-                [PSCredential]$credentialMSOL = New-Object system.Management.Automation.PSCredential("admin@dom.onmicrosoft.com", $passwordSecure)
+                #$password = ""
+               # $key = ""
+                #$passwordSecure = ConvertTo-SecureString -String $password -Key ([Byte[]]$key.Split(" "))
+                #[PSCredential]$credentialMSOL = New-Object system.Management.Automation.PSCredential("admin@dom.onmicrosoft.com", $passwordSecure)
 
                 [boolean]$Script:ExchangeOnlineState = $false
                 [boolean]$Script:MSOLState = $false
@@ -172,7 +168,7 @@ Begin
                 Test-PackageProvider "NuGet" 
                 #Test-PackageProvider "PowerShellGet"    
 
-                $GraphModulesList =  "Authentication","Users","Groups","Mail","Calendar","Reports","Identity.DirectoryManagement" 
+                $GraphModulesList =  "Authentication","Users","Groups","Mail","Calendar","Reports","Identity.DirectoryManagement","Identity.SignIns"
                 $OthersModulesList = "ExchangeOnlineManagement","MSOnline"
                 if(-not (Test-Modules ($GraphModulesList + $OthersModulesList)))
                 {
