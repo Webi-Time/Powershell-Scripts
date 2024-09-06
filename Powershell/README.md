@@ -13,7 +13,6 @@ version: "0.1"
 <p align="left">Les scripts que vous trouverez dans mon Github ont été développés dans le cadre de missions pour des clients, puis modifiés. Il est important de préciser que certains scripts ont un but bien précis et sont difficilement adaptables. Deplus, la responsabilité n'engage que celui qui utilise le script. J'essaie d'être le plus professionnel possible mais il peut rester des erreurs.</p>
 
 
-<img src="/Powershell/Images/Check-AzureAppsCredExpiration-Mail.png"  /></a>
 
 # Configuration JSON
 
