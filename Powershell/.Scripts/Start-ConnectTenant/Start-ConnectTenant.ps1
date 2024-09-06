@@ -122,10 +122,10 @@ Begin
             # Variables du script
 
                 ## Credential encodé avec MessageOpsPasswordObfuscator.ps1 ##
-                $password = ""
-                $key = ""
-                $passwordSecure = ConvertTo-SecureString -String $password -Key ([Byte[]]$key.Split(" "))
-                [PSCredential]$credentialMSOL = New-Object system.Management.Automation.PSCredential("admin@dom.onmicrosoft.com", $passwordSecure)
+                #$password = "fghfgh"
+                ##$key = "1"
+                #$passwordSecure = ConvertTo-SecureString -String $password -Key ([Byte[]]$key.Split(" "))
+                #[PSCredential]$credentialMSOL = New-Object system.Management.Automation.PSCredential("admin@dom.onmicrosoft.com", $passwordSecure)
 
                 [boolean]$Script:ExchangeOnlineState = $false
                 [boolean]$Script:MSOLState = $false
@@ -141,7 +141,7 @@ Begin
                 Test-PackageProvider "NuGet" 
                 #Test-PackageProvider "PowerShellGet"    
 
-                $GraphModulesList =  "Authentication","Users","Groups","Mail","Calendar","Reports","Identity.DirectoryManagement" 
+                $GraphModulesList =  "Authentication","Reports","CloudCommunications","Files","Teams","Sites"
                 $OthersModulesList = "ExchangeOnlineManagement","MSOnline"
                 if(-not (Test-Modules ($GraphModulesList + $OthersModulesList)))
                 {
@@ -351,21 +351,21 @@ Begin
             {
                 param([string]$filter = "")	
                 $cmdFound = Get-Command -Module "Microsoft.Graph*" | Select-Object Name,Source -Wait | Where-Object {$_.Name -like "*$filter*"} | Sort-Object Source,Name
-                Log "Script" "$($cmdFound | Select-Object * -Wait | Format-Table -AutoSize | Out-String)" 0 Yellow
+                Log "Script" "a $($cmdFound | Select-Object * -Wait | Format-Table -AutoSize | Out-String)" 0 Yellow
                 
             }
             function Get-CommandsMSOL 
             {
                 param([string]$filter = "")	
                 $cmdFound = Get-Command -Module "MSOnline" | Select-Object Name,Source -Wait | Where-Object {$_.Name -like "*$filter*"} | Sort-Object Source,Name
-                Log "Script" "$($cmdFound | Select-Object * -Wait | Format-Table -AutoSize | Out-String)" 0 Yellow
+                Log "Script" "a $($cmdFound | Select-Object * -Wait | Format-Table -AutoSize | Out-String)" 0 Yellow
                 
             }
             function Get-CommandsExchOnline
             {
                 param([string]$filter = "")	
                 $cmdFound = Get-Command -Module "ExchangeOnlineManagement" | Select-Object Name,Source -Wait | Where-Object {$_.Name -like "*$filter*"} | Sort-Object Source,Name
-                Log "Script" "$($cmdFound | Select-Object * -Wait | Format-Table -AutoSize | Out-String)" 0 Yellow
+                Log "Script" "a $($cmdFound | Select-Object * -Wait | Format-Table -AutoSize | Out-String)" 0 Yellow
                 
             }
             function Get-APIPermission 
@@ -374,7 +374,7 @@ Begin
                 try {
                     $PermCmdFound = Find-MgGraphCommand -Command $command -ErrorAction Stop| Select-Object -First 1 -ExpandProperty Permissions -Wait
                     if ($PermCmdFound) {
-                        Log "Script" "$($PermCmdFound | Select-Object * -Wait | Format-Table -AutoSize | Out-String)" 0 Yellow
+                        Log "Script" "a $($PermCmdFound | Select-Object * -Wait | Format-Table -AutoSize | Out-String)" 0 Yellow
                     }else {
                         Log "Script" "Command Not Found, please make sur you get module for this command" 0 Yellow
                     }
